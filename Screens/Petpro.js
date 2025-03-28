@@ -154,7 +154,7 @@ const styles = {
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: 'white',
-    paddingHorizontal: 21,
+    paddingHorizontal: 22,
   },
   header: {
     fontSize: 24,
