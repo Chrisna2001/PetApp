@@ -1,131 +1,59 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- */
-
 import React from 'react';
-import type {PropsWithChildren} from 'react';
-import {
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  useColorScheme,
-  View,
-} from 'react-native';
+import { NavigationContainer } from '@react-navigation/native';
+import { createStackNavigator } from '@react-navigation/stack';
+import Login from './Screens/Login';
+import Register from './Screens/Register';
+import SplashScreen from './Screens/SplashScreen';
+import phonenum from './Screens/phonenum';  
+import otp from './Screens/otp';
+import Create_ac from './Screens/Create_ac';
+import ForgotPassword from './Screens/ForgotPassword';
+import Resetpassword from './Screens/Resetpassword';
+import BottomTabNav from './Screens/BottomNavigation/BottomTabNavigator';
+import Adoption from './Screens/Features/Adoption';
+import Adopt_petdetails from './Screens/Adopt_petdetails';
+import BuyorSell from './Screens/BuyorSell';
+import SkipPage from './Screens/SkipPage';
+import Petpro from './Screens/Petpro';
+import PetDisplay from './Screens/PetDisplay';
+import PetSell from './Screens/Features/PetSell'
+import Grooming from './Screens/Features/Grooming';
+import CutomeDrawerConten from './Screens/Drawer/CustomDrawerContent';
+import AppNavigator from './Screens/Drawer/AppNavigator';
 
-import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
 
-type SectionProps = PropsWithChildren<{
-  title: string;
-}>;
 
-function Section({children, title}: SectionProps): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
+const Stack = createStackNavigator();
+
+const App = () => {
+  console.log("welcome to techtaliya");
   return (
-    <View style={styles.sectionContainer}>
-      <Text
-        style={[
-          styles.sectionTitle,
-          {
-            color: isDarkMode ? Colors.white : Colors.black,
-          },
-        ]}>
-        {title}
-      </Text>
-      <Text
-        style={[
-          styles.sectionDescription,
-          {
-            color: isDarkMode ? Colors.light : Colors.dark,
-          },
-        ]}>
-        {children}
-      </Text>
-    </View>
+    <NavigationContainer>
+      <Stack.Navigator screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="SplashScreen" component={SplashScreen} />
+        <Stack.Screen name="phonenum" component={phonenum} />
+        <Stack.Screen name="Login" component={Login} />
+        <Stack.Screen name="Register" component={Register} />
+        <Stack.Screen name="otp" component={otp} />
+        <Stack.Screen name="Create_ac" component={Create_ac} />
+        <Stack.Screen name="ForgotPassword" component={ForgotPassword} />
+        <Stack.Screen name="Resetpassword" component={Resetpassword} />
+        <Stack.Screen name="Home" component={BottomTabNav} />
+        <Stack.Screen name="Adoption" component={Adoption} />
+        <Stack.Screen name="Adopt_petdetails" component={Adopt_petdetails} />
+        <Stack.Screen name="BuyorSell" component={BuyorSell} />
+        <Stack.Screen name="SkipPage" component={SkipPage} />
+        <Stack.Screen name="Petpro" component={Petpro} />
+        <Stack.Screen name="PetDisplay" component={PetDisplay} />
+        <Stack.Screen name="PetSell" component={PetSell} />
+        <Stack.Screen name="Grooming" component={Grooming} />
+        <Stack.Screen name="CutomeDrawerContent" component={CutomeDrawerConten} />
+        <Stack.Screen name=" AppNavigator" component={ AppNavigator} />
+      
+
+      </Stack.Navigator>
+    </NavigationContainer>
   );
-}
-
-function App(): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
-
-  const backgroundStyle = {
-    backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
-  };
-
-  /*
-   * To keep the template simple and small we're adding padding to prevent view
-   * from rendering under the System UI.
-   * For bigger apps the reccomendation is to use `react-native-safe-area-context`:
-   * https://github.com/AppAndFlow/react-native-safe-area-context
-   *
-   * You can read more about it here:
-   * https://github.com/react-native-community/discussions-and-proposals/discussions/827
-   */
-  const safePadding = '5%';
-
-  return (
-    <View style={backgroundStyle}>
-      <StatusBar
-        barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-        backgroundColor={backgroundStyle.backgroundColor}
-      />
-      <ScrollView
-        style={backgroundStyle}>
-        <View style={{paddingRight: safePadding}}>
-          <Header/>
-        </View>
-        <View
-          style={{
-            backgroundColor: isDarkMode ? Colors.black : Colors.white,
-            paddingHorizontal: safePadding,
-            paddingBottom: safePadding,
-          }}>
-          <Section title="Step One">
-            Edit <Text style={styles.highlight}>App.tsx</Text> to change this
-            screen and then come back to see your edits.
-          </Section>
-          <Section title="See Your Changes">
-            <ReloadInstructions />
-          </Section>
-          <Section title="Debug">
-            <DebugInstructions />
-          </Section>
-          <Section title="Learn More">
-            Read the docs to discover what to do next:
-          </Section>
-          <LearnMoreLinks />
-        </View>
-      </ScrollView>
-    </View>
-  );
-}
-
-const styles = StyleSheet.create({
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
-  },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
-  },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
-  },
-  highlight: {
-    fontWeight: '700',
-  },
-});
+};
 
 export default App;
