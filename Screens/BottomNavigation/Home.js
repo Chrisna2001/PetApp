@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import Drawer from '../Drawer/CustomDrawerContent';
+import Drawer from '../Drawer/CustomDrawerContent'; 
 import {
   View,
   StyleSheet,
@@ -12,10 +12,10 @@ import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import {API_URL} from 'react-native-dotenv';
 import axios from 'axios';
 import AppNavigator from '../Drawer/AppNavigator';
-// import {fetchData} from './utils/ApiService';
+// import {fetchData} from './utils/ApiService';     
 import {fetchData} from '../utils/ApiService';
 
-const carouselData = [
+const carouselData = [  
   {
     id: '1',
     name: 'Adopte Pet',
@@ -23,7 +23,7 @@ const carouselData = [
   },
   {
     id: '2',
-    name: 'Buy Pet',
+    name: 'pet selling',
     image: require('../../assets/images/img/adoption.jpg'),
   },
   {
@@ -178,6 +178,10 @@ const Home = ({navigation}) => {
                 navigation.navigate('PetSell');
               } else if (item.id === '3') {
                 navigation.navigate('Grooming');
+              } else if (item.id === '8') {
+                navigation.navigate('PetMissing');
+              } else if (item.id === '7') {
+                navigation.navigate('PetEvent');
               } else {
                 console.log('Invalid ID');
               }

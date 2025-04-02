@@ -20,6 +20,8 @@ import PetSell from './Screens/Features/PetSell'
 import Grooming from './Screens/Features/Grooming';
 import CutomeDrawerConten from './Screens/Drawer/CustomDrawerContent';
 import AppNavigator from './Screens/Drawer/AppNavigator';
+import PetMissing from './Screens/Features/PetMissing';
+import PetEvent from './Screens/Features/PetEvent';
 
 
 
@@ -30,7 +32,7 @@ const App = () => {
   return (
     <NavigationContainer>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="SplashScreen" component={SplashScreen} />
+        {/* <Stack.Screen name="SplashScreen" component={SplashScreen} />
         <Stack.Screen name="phonenum" component={phonenum} />
         <Stack.Screen name="Login" component={Login} />
         <Stack.Screen name="Register" component={Register} />
@@ -49,7 +51,15 @@ const App = () => {
         <Stack.Screen name="Grooming" component={Grooming} />
         <Stack.Screen name="CutomeDrawerContent" component={CutomeDrawerConten} />
         <Stack.Screen name=" AppNavigator" component={ AppNavigator} />
-      
+       */}
+
+        <Stack.Screen name="Home" component={BottomTabNav} />
+        <Stack.Screen name="PetMissing" component={PetMissing} />
+        <Stack.Screen name="Petpro" component={Petpro} />
+        <Stack.Screen name="Adoption" component={Adoption} />
+        <Stack.Screen name="PetSell" component={PetSell} />
+        <Stack.Screen name="Grooming" component={Grooming} />
+        <Stack.Screen name="PetEvent" component={PetEvent} />
 
       </Stack.Navigator>
     </NavigationContainer>
