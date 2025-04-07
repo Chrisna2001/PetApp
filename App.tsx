@@ -22,6 +22,7 @@ import CutomeDrawerConten from './Screens/Drawer/CustomDrawerContent';
 import AppNavigator from './Screens/Drawer/AppNavigator';
 import PetMissing from './Screens/Features/PetMissing';
 import PetEvent from './Screens/Features/PetEvent';
+import DrawerHome from './Screens/Features/DrawerHome';
 
 
 
@@ -60,6 +61,7 @@ const App = () => {
         <Stack.Screen name="PetSell" component={PetSell} />
         <Stack.Screen name="Grooming" component={Grooming} />
         <Stack.Screen name="PetEvent" component={PetEvent} />
+        <Stack.Screen name="DrawerHome" component={DrawerHome} />
 
       </Stack.Navigator>
     </NavigationContainer>

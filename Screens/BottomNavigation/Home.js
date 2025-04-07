@@ -93,10 +93,10 @@ const Home = ({navigation}) => {
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <TouchableOpacity
-        style={styles.drawerIcon}
-        onPress={() => AppNavigator()}>
-        <MaterialIcons name="menu" size={30} color="black" />
-      </TouchableOpacity>
+  style={styles.drawerIcon}
+  onPress={() => navigation.openDrawer()}>
+  <MaterialIcons name="menu" size={30} color="black" />
+</TouchableOpacity>
       <View
         style={{flexDirection: 'row', alignItems: 'center', marginRight: 60}}>
         <View style={{alignItems: 'center'}}>

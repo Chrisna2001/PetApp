@@ -24,7 +24,7 @@ const PetEvent = () => {
     console.log('Event submitted:', eventData);
     setSubmitted(true);
     
-    // Reset form after 3 seconds
+   
     setTimeout(() => {
       setEventData({
         petName: '',

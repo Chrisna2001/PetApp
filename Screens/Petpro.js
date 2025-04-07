@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useState} from 'react';
 import {
   View,
   Text,
@@ -10,8 +10,8 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import {launchImageLibrary} from 'react-native-image-picker';
-import {fetchData} from './utils/ApiService';
-import {uploadImage} from './utils/ApiServiceImage';
+import { API_URL } from 'react-native-dotenv';
+
 
 const PetProfile = ({navigation}) => {
   const [petName, setPetName] = useState('');
@@ -19,84 +19,60 @@ const PetProfile = ({navigation}) => {
   const [petAge, setPetAge] = useState('');
   const [petSex, setPetSex] = useState('');
   const [petType, setPetType] = useState('');
-  const [profileImage, setProfileImage] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [image, setImage] = useState(null);
+  const [uploading, setUploading] = useState(false);
 
-  const selectProfilePicture = () => {
+  const pickImage = () => {
     launchImageLibrary({mediaType: 'photo'}, response => {
       if (response.didCancel) {
         Alert.alert('Cancelled', 'You did not select an image.');
       } else if (response.assets) {
-        setProfileImage(response.assets[0].uri);
+        setImage(response.assets[0].uri);
       }
     });
   };
 
-  // const handleSaveProfile = async () => {
-  //   setIsLoading(true);
-  //   try {
-  //     const response = await axios.post(
-  //       `${API_URL}pet-profile/create`,
-  //       {
-  //         petName: petName,
-  //         profilePicture: profileImage == null ? 'jhg' : profileImage,
-  //         petAge: petAge,
-  //         type: petType,
-  //         sex: petSex,
-  //         breed: petBreed,
-  //       },
-  //       {
-  //         headers: {
-  //           'Content-Type': 'application/json',
-  //         },
-  //       },
-  //     );
-  //     console.log(response.data);
-  //     navigation.navigate('Home');
-  //   } catch (error) {
-  //     console.error('failed ', error);
-  //   }
-  // };
+  const uploadImage = async () => {
+    if (!image) return;
 
-  const handleSaveProfile = async () => {
-    console.log('the profile image is ------------------->', profileImage);
-
-    // setIsLoading(true);
-
-    const imageUrl = await uploadImage(profileImage, 'images/create');
-    console.log('image url', imageUrl);
+    setUploading(true);
+    console.log("imageeeeeeee------------->",image);
     try {
-      const response = await fetchData('pet-profile/create', 'POST', {
-        petName: petName,
-        profilePicture: profileImage == null ? 'jpg' : imageUrl,
-        petAge: petAge,
-        type: petType,
-        sex: petSex,
-        breed: petBreed,
+      const formData = new FormData();
+      formData.append('image', {
+        uri: image,
+        name: 'image.jpg',
+        type: 'image/jpeg',
       });
-      console.log(response.data);
-      navigation.navigate('Home');
+      console.log('formdata ------>>',formData);
+       const response = await fetch(`${API_URL}upload/image/`, {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      const result = await response.json();
+      console.log('Upload successful:', result);
     } catch (error) {
-      console.error('Error fetching pet details:', error.message);
+      console.error('Error uploading image:', error);
+    } finally {
+      setUploading(false);
     }
   };
 
   return (
     <View style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="white" />
-
       <Text style={styles.header}>Pet Profile</Text>
-
-      <TouchableOpacity
-        onPress={selectProfilePicture}
-        style={styles.imagePicker}>
-        {profileImage ? (
-          <Image source={{uri: profileImage}} style={styles.profileImage} />
+      <TouchableOpacity onPress={pickImage} style={styles.imagePicker}>
+        {image ? (
+          <Image source={{uri: image}} style={styles.profileImage} />
         ) : (
           <Text style={styles.uploadText}>Upload Pet Picture</Text>
         )}
       </TouchableOpacity>
-
       <TextInput
         style={styles.input}
         placeholder="Pet Name"
@@ -133,12 +109,11 @@ const PetProfile = ({navigation}) => {
         value={petType}
         onChangeText={setPetType}
       />
-
       <TouchableOpacity
         style={styles.registerButton}
-        onPress={handleSaveProfile}
-        disabled={isLoading}>
-        {isLoading ? (
+        onPress={uploadImage}
+        disabled={uploading}>
+        {uploading ? (
           <ActivityIndicator color="white" />
         ) : (
           <Text style={styles.buttonText}>Save Profile</Text>
