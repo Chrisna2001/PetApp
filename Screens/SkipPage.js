@@ -1,8 +1,17 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { View, StyleSheet, Image, Text, TouchableOpacity, FlatList, Dimensions, ScrollView } from 'react-native';
+import React, {useState, useEffect, useRef} from 'react';
+import {
+  View,
+  StyleSheet,
+  Image,
+  Text,
+  TouchableOpacity,
+  FlatList,
+  Dimensions,
+  ScrollView,
+} from 'react-native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 
-const { width, height } = Dimensions.get('window');
+const {width, height} = Dimensions.get('window');
 
 const images = [
   require('../assets/images/img/cat1.jpg'),
@@ -11,7 +20,7 @@ const images = [
   require('../assets/images/img/petadopt.jpg'),
 ];
 
-const SkipPage = ({ navigation }) => {
+const SkipPage = ({navigation}) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const flatListRef = useRef(null);
 
@@ -19,13 +28,13 @@ const SkipPage = ({ navigation }) => {
     const interval = setInterval(() => {
       let nextIndex = (currentImageIndex + 1) % images.length;
       setCurrentImageIndex(nextIndex);
-      flatListRef.current?.scrollToIndex({ index: nextIndex, animated: true });
+      flatListRef.current?.scrollToIndex({index: nextIndex, animated: true});
     }, 3000);
 
     return () => clearInterval(interval);
   }, [currentImageIndex]);
 
-  const onViewableItemsChanged = useRef(({ viewableItems }) => {
+  const onViewableItemsChanged = useRef(({viewableItems}) => {
     if (viewableItems.length > 0) {
       setCurrentImageIndex(viewableItems[0].index);
     }
@@ -33,12 +42,14 @@ const SkipPage = ({ navigation }) => {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      {/* Menu Button */}
-      <TouchableOpacity style={styles.drawerIcon} onPress={() => navigation.CustomDrawerContent()}>
+  
+      <TouchableOpacity
+        style={styles.drawerIcon}
+        onPress={() => navigation.CustomDrawerContent()}>
         <MaterialIcons name="menu" size={30} color="black" />
       </TouchableOpacity>
 
-      {/* Image Carousel */}
+     
       <FlatList
         ref={flatListRef}
         data={images}
@@ -46,27 +57,36 @@ const SkipPage = ({ navigation }) => {
         pagingEnabled
         showsHorizontalScrollIndicator={false}
         keyExtractor={(item, index) => index.toString()}
-        renderItem={({ item }) => (
+        renderItem={({item}) => (
           <Image source={item} style={styles.bannerImage} />
         )}
         onViewableItemsChanged={onViewableItemsChanged}
-        viewabilityConfig={{ viewAreaCoveragePercentThreshold: 50 }}
+        viewabilityConfig={{viewAreaCoveragePercentThreshold: 50}}
       />
 
-      {/* Dots Indicator */}
+    
       <View style={styles.dotsContainer}>
         {images.map((_, index) => (
-          <View key={index} style={[styles.dot, currentImageIndex === index && styles.activeDot]} />
+          <View
+            key={index}
+            style={[
+              styles.dot,
+              currentImageIndex === index && styles.activeDot,
+            ]}
+          />
         ))}
       </View>
 
-      {/* Your Previous UI Content */}
       <View style={styles.textContainer}>
         <Text style={styles.title}>Add your pet</Text>
-        <Text style={styles.description}>Join our pet-loving community today!</Text>
+        <Text style={styles.description}>
+          Join our pet-loving community today!
+        </Text>
       </View>
 
-      <TouchableOpacity style={styles.button}>
+      <TouchableOpacity
+        style={styles.button}
+        onPress={() => navigation.navigate('Login')}>
         <Text style={styles.buttonText}>Get Started</Text>
       </TouchableOpacity>
     </ScrollView>

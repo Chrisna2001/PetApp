@@ -18,11 +18,15 @@ import Petpro from './Screens/Petpro';
 import PetDisplay from './Screens/PetDisplay';
 import PetSell from './Screens/Features/PetSell'
 import Grooming from './Screens/Features/Grooming';
-import CutomeDrawerConten from './Screens/Drawer/CustomDrawerContent';
+import CustomDrawerContent from './Screens/Drawer/CustomDrawerContent'
 import AppNavigator from './Screens/Drawer/AppNavigator';
 import PetMissing from './Screens/Features/PetMissing';
 import PetEvent from './Screens/Features/PetEvent';
 import DrawerHome from './Screens/Features/DrawerHome';
+import DrawerNavigator from './Screens/Drawer/DrawerNavigator';
+import eventdisplay from './Screens/eventdisplay';
+
+
 
 
 
@@ -33,7 +37,7 @@ const App = () => {
   return (
     <NavigationContainer>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
-        {/* <Stack.Screen name="SplashScreen" component={SplashScreen} />
+        <Stack.Screen name="SplashScreen" component={SplashScreen} />
         <Stack.Screen name="phonenum" component={phonenum} />
         <Stack.Screen name="Login" component={Login} />
         <Stack.Screen name="Register" component={Register} />
@@ -50,19 +54,11 @@ const App = () => {
         <Stack.Screen name="PetDisplay" component={PetDisplay} />
         <Stack.Screen name="PetSell" component={PetSell} />
         <Stack.Screen name="Grooming" component={Grooming} />
-        <Stack.Screen name="CutomeDrawerContent" component={CutomeDrawerConten} />
         <Stack.Screen name=" AppNavigator" component={ AppNavigator} />
-       */}
+        <Stack.Screen name='PetMissing' component={PetMissing} />
+        <Stack.Screen name='eventdisplay' component={eventdisplay} />
 
-        <Stack.Screen name="Home" component={BottomTabNav} />
-        <Stack.Screen name="PetMissing" component={PetMissing} />
-        <Stack.Screen name="Petpro" component={Petpro} />
-        <Stack.Screen name="Adoption" component={Adoption} />
-        <Stack.Screen name="PetSell" component={PetSell} />
-        <Stack.Screen name="Grooming" component={Grooming} />
-        <Stack.Screen name="PetEvent" component={PetEvent} />
-        <Stack.Screen name="DrawerHome" component={DrawerHome} />
-
+        
       </Stack.Navigator>
     </NavigationContainer>
   );

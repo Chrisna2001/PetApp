@@ -38,12 +38,22 @@ const PetProfile = ({navigation}) => {
     setUploading(true);
     console.log("imageeeeeeee------------->",image);
     try {
-      const formData = new FormData();
+      const formData = new FormData(); //Creates a new FormData objec This is how we send files (like images) in a multipart/form-data format via HTTP POST.
       formData.append('image', {
         uri: image,
         name: 'image.jpg',
         type: 'image/jpeg',
       });
+
+      // if (response.assets) {
+      //   const asset = response.assets[0];
+      //   setImage({
+      //     uri: asset.uri,
+      //     name: asset.fileName,
+      //     type: asset.type,
+      //   });
+      // }
+      
       console.log('formdata ------>>',formData);
        const response = await fetch(`${API_URL}upload/image/`, {
         method: 'POST',

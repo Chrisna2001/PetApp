@@ -13,9 +13,9 @@ const SplashScreen = ({navigation}) => {
   const confirm = async () => {
     const token = await Keychain.getGenericPassword();
     if (token) {
-      navigation.navigate('Home');
+      navigation.navigate('SkipPage');
     } else {
-      navigation.navigate('Login');
+      navigation.navigate('SkipPage');
     }
   };
 

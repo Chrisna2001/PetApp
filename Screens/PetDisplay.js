@@ -2,10 +2,10 @@ import React, {useEffect, useState} from 'react';
 import {View, Text, Image, StyleSheet, ActivityIndicator} from 'react-native';
 import {fetchData} from './utils/ApiService';
 
-const PetDisplay = ({route}) => {
+const PetDisplay = ({route}) => { //route parameter of pass peid, 
   const {petId} = route.params;
-  const [petDetails, setPetDetails] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [petDetails, setPetDetails] = useState(null); // stores the pet info fetched from the API.
+  const [loading, setLoading] = useState(true); //show pet data
 
   console.log('the samasns-------------------->', petId);
 

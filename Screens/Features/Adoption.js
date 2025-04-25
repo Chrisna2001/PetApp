@@ -10,9 +10,9 @@ import {fetchData} from '../utils/ApiService';
 import {useEffect, useState} from 'react';
 
 const Adoption = () => {
-  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [selectedCategory, setSelectedCategory] = useState('all');// selected for filtering pets (all, dog, cat
 
-  const [pets, setPets] = useState([]);
+  const [pets, setPets] = useState([]); 
 
   const [loading, setLoading] = useState(true);
 

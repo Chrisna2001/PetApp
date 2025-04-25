@@ -1,59 +1,46 @@
 import React, {useState} from 'react';
-
-import {View, Text, TextInput, TouchableOpacity} from 'react-native';
+import {View, Text, TextInput, TouchableOpacity, Alert} from 'react-native';
 import Logo from '../assets/images/login.svg';
-import axios from 'axios';
-import {API_URL} from 'react-native-dotenv';
-import * as Keychain from 'react-native-keychain';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useMutation } from './utils/ApiService';
 
 const Login = ({navigation}) => {
   console.log('welcome');
 
-  const [username, setusername] = useState('');
-  const [password, setpassword] = useState('');
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const { fetchData, loading, data } = useMutation();
   
-  console.log('erorr------> 1')
   const handleSubmit = async () => {
     console.log('welcome--------------->', username, password);
-    try {
-      const response = await axios.post(
-        ` ${API_URL}auth/login`,
-        {
-          userName: username,
-          password: password,
-        },
-        {
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        },
-      );
-      // console.log(response.data);
-      tokenauth(response.data.authToken);
-    } catch (error) {
-      console.error('Error:', error);
+    if (!username || !password) {
+      Alert.alert('Error', 'Please enter both username and password');
+      return;
     }
 
-    
-  };
-
-  const tokenauth = async recievedtoken => {
-    const token = recievedtoken;
-    await Keychain.setGenericPassword('keyToken', token);
     try {
-      const credentials = await Keychain.getGenericPassword();
-      console.log('reached here-------------3--------------', credentials);
-      if (credentials) {
-        console.log('succesfully retrieved' + credentials.password);
-        navigation.navigate('Create_ac');
-      } else {
-        console.log('no credential is stored');
-      }
+      const loginData = {
+        username: username,
+        password: password,
+      };
+      
+      const result = await fetchData({
+        endpoint: 'auth/Login',
+        method: 'POST',
+        data: loginData
+      });
+      
+      console.log("Login result:", result);
+      
+      // Save username to AsyncStorage for persistence
+      await AsyncStorage.setItem('username', username);
+      
+      // Navigate to Home with username in params
+      navigation.navigate('Home', { username });
     } catch (error) {
-      console.error('failed ', error);
+      console.error('Login error:', error);
+      Alert.alert('Error', 'Failed to login. Please check your credentials.');
     }
-
-    // await Keychain.resetGenericPassword();
   };
 
   return (
@@ -99,7 +86,7 @@ const Login = ({navigation}) => {
             Login
           </Text>
 
-          <TouchableOpacity onPress={handleSubmit}>
+          <TouchableOpacity onPress={() => navigation.navigate('Register')}>
             <Text style={{fontSize: 18, fontWeight: 'bold', color: 'gray'}}>
               Signup
             </Text>
@@ -108,7 +95,7 @@ const Login = ({navigation}) => {
 
         <TextInput
           value={username}
-          onChangeText={setusername}
+          onChangeText={setUsername}
           style={{
             width: '100%',
             height: 50,
@@ -139,7 +126,7 @@ const Login = ({navigation}) => {
             color: 'black',
           }}
           value={password}
-          onChangeText={setpassword}
+          onChangeText={setPassword}
           placeholder="Password"
           placeholderTextColor="#aaa"
           secureTextEntry
@@ -158,7 +145,7 @@ const Login = ({navigation}) => {
         </TouchableOpacity>
 
         <TouchableOpacity
-          onPress={() => handleSubmit()}
+          onPress={handleSubmit}
           style={{
             width: '100%',
             height: 50,
@@ -169,7 +156,7 @@ const Login = ({navigation}) => {
             marginBottom: 10,
           }}>
           <Text style={{fontSize: 18, color: 'white', fontWeight: 'bold'}}>
-            Login
+            {loading ? 'Logging in...' : 'Login'}
           </Text>
         </TouchableOpacity>
 

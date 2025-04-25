@@ -1,178 +1,245 @@
-import React, { useState } from 'react';
-import { 
-  View, Text, Image, TouchableOpacity, FlatList, StyleSheet, TextInput 
-} from 'react-native';
-import * as ImagePicker from 'react-native-image-picker';
+import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, Alert, ScrollView } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import { Picker } from '@react-native-picker/picker';
+import { useMutation } from '../utils/ApiService';
 
-const Profile = () => {
-  const [petsData, setPetsData] = useState([]);
+const Profile = ({ navigation }) => {
+  const [isEditing, setIsEditing] = useState(false);
+  const [profileData, setProfileData] = useState({
+    name: '',
+    username: '',
+    email: '',
+    phoneNumber: '',
+    age: '',
+    sex: '',
+    Location: ''
+  });
 
-  const pickImage = () => {
-    ImagePicker.launchImageLibrary(
-      { mediaType: 'photo', quality: 1 },
-      (response) => {
-        if (!response.didCancel && response.assets) {
-          const newPet = {
-            id: String(Date.now()),
-            name: `Pet ${petsData.length + 1}`,
-            image: { uri: response.assets[0].uri },
-            description: '',
-            editing: false,
-          };
-          setPetsData([newPet, ...petsData]);
-        }
-      }
-    );
+  const { fetchData, loading, data } = useMutation();
+
+  useEffect(() => {
+    fetchuserinfo();
+  }, []);
+
+  const fetchuserinfo = async () => {
+    const response = await fetchData({
+      endpoint: 'users/me',
+      method: 'GET'
+    });
+    if (response) {
+      setProfileData({
+        name: response.name || '',
+        username: response.username || '',
+        email: response.email || '',
+        phoneNumber: response.phoneNumber || '',
+        age: response.age || '',
+        sex: response.sex || '',
+        Location: response.Location || ''
+      });
+    }
   };
 
-  const updateDescription = (id, text) => {
-    setPetsData((prev) => prev.map(pet => pet.id === id ? { ...pet, description: text } : pet));
+  const saveProfileData = async () => {
+    try {
+      await AsyncStorage.setItem('userProfile', JSON.stringify(profileData));
+      await AsyncStorage.setItem('username', profileData.username);
+      setIsEditing(false);
+      Alert.alert('Success', 'Profile updated successfully!');
+    } catch (error) {
+      console.error('Error saving profile data:', error);
+      Alert.alert('Error', 'Failed to update profile data');
+    }
   };
-
-  const toggleEdit = (id) => {
-    setPetsData((prev) => prev.map(pet => pet.id === id ? { ...pet, editing: !pet.editing } : pet));
-  };
-
-  const deleteImage = (id) => {
-    setPetsData(petsData.filter(pet => pet.id !== id));
-  };
-
-  const renderItem = ({ item }) => (
-    <View style={styles.card}>
-      <Image source={item.image} style={styles.image} />
-      <Text style={styles.name}>{item.name}</Text>
-
-      {item.editing ? (
-        <>
-          <TextInput
-            style={styles.input}
-            placeholder="Enter description..."
-            value={item.description}
-            onChangeText={(text) => updateDescription(item.id, text)}
-          />
-          <TouchableOpacity style={styles.saveButton} onPress={() => toggleEdit(item.id)}>
-            <Text style={styles.saveText}>Save</Text>
-          </TouchableOpacity>
-        </>
-      ) : (
-        <>
-          <Text style={styles.description}>{item.description || 'No description added'}</Text>
-          <TouchableOpacity style={styles.editButton} onPress={() => toggleEdit(item.id)}>
-            <Text style={styles.editText}>Edit</Text>
-          </TouchableOpacity>
-        </>
-      )}
-
-      <TouchableOpacity style={styles.deleteButton} onPress={() => deleteImage(item.id)}>
-        <Text style={styles.deleteIcon}>remove</Text>
-      </TouchableOpacity>
-    </View>
-  );
 
   return (
-    <View style={styles.container}>
-      <FlatList
-        data={petsData}
-        renderItem={renderItem}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.listContainer}
-      />
-      <TouchableOpacity style={styles.uploadButton} onPress={pickImage}>
-        <Text style={styles.uploadText}>Upload Pet Image</Text>
-      </TouchableOpacity>
-    </View>
+    <ScrollView style={styles.scrollContainer}>
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <Text style={styles.heading}> Profile Info</Text>
+        </View>
+
+        <View style={styles.profileIcon}>
+          <MaterialIcons name="account-circle" size={100} color="orange" />
+        </View>
+
+        <View style={styles.formContainer}>
+          <Text style={styles.label}>Name:</Text>
+          <TextInput
+            style={[styles.input, !isEditing && styles.disabledInput]}
+            value={profileData.name}
+            onChangeText={(text) => setProfileData({ ...profileData, name: text })}
+            editable={isEditing}
+            placeholder="Your Name"
+          />
+
+          <Text style={styles.label}>Username:</Text>
+          <TextInput
+            style={[styles.input, !isEditing && styles.disabledInput]}
+            value={profileData.username}
+            onChangeText={(text) => setProfileData({ ...profileData, username: text })}
+            editable={isEditing}
+            placeholder="Your Username"
+          />
+
+          <Text style={styles.label}>Email:</Text>
+          <TextInput
+            style={[styles.input, !isEditing && styles.disabledInput]}
+            value={profileData.email}
+            onChangeText={(text) => setProfileData({ ...profileData, email: text })}
+            editable={isEditing}
+            placeholder="Your Email"
+            keyboardType="email-address"
+          />
+
+          <Text style={styles.label}>Phone:</Text>
+          <TextInput
+            style={[styles.input, !isEditing && styles.disabledInput]}
+            value={profileData.phoneNumber}
+            onChangeText={(text) => setProfileData({ ...profileData, phoneNumber: text })}
+            editable={isEditing}
+            placeholder="Your Phone Number"
+            keyboardType="phone-pad"
+          />
+
+          <Text style={styles.label}>Age:</Text>
+          <TextInput
+            style={[styles.input, !isEditing && styles.disabledInput]}
+            value={profileData.age}
+            onChangeText={(text) => setProfileData({ ...profileData, age: text })}
+            editable={isEditing}
+            placeholder="Your Age"
+            keyboardType="numeric"
+          />
+
+          <Text style={styles.label}>Sex:</Text>
+          <TextInput
+            style={[styles.input, !isEditing && styles.disabledInput]}
+            value={profileData.sex}
+            onChangeText={(text) => setProfileData({ ...profileData, sex: text })}
+            editable={isEditing}
+            placeholder="Male / Female / Other"
+          />
+
+          <Text style={styles.label}>Location:</Text>
+          <View style={[styles.pickerContainer, !isEditing && styles.disabledInput]}>
+            <Picker
+              selectedValue={profileData.Location}
+              onValueChange={(itemValue) =>
+                setProfileData({ ...profileData, Location: itemValue })
+              }
+              enabled={isEditing}
+            >
+              <Picker.Item label="Select your location" value="" />
+              <Picker.Item label="kakkanad" value="kakkanad"  />
+              <Picker.Item label="Aluva" value="Aluva" />
+              <Picker.Item label="Edappally" value="Edappally" />
+              <Picker.Item label="Kalamassery" value="Kalamassery" />
+            </Picker>
+          </View>
+        </View>
+
+        <View style={styles.buttonContainer}>
+          <TouchableOpacity
+            style={[styles.button, isEditing && styles.cancelButton]}
+            onPress={() => setIsEditing(!isEditing)}
+          >
+            <Text style={styles.buttonText}>
+              {isEditing ? 'Cancel' : 'Edit Profile'}
+            </Text>
+          </TouchableOpacity>
+
+          {isEditing && (
+            <TouchableOpacity style={styles.saveButton} onPress={saveProfileData}>
+              <Text style={styles.buttonText}>Save Changes</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+      </View>
+    </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
+  scrollContainer: {
+    flex: 1,
+    backgroundColor: 'white',
+  },
   container: {
     flex: 1,
-    backgroundColor: '#fff',
-    paddingHorizontal: 10,
-    paddingTop: 10,
+    padding: 20,
+    backgroundColor: 'white',
   },
-  uploadButton: {
-    backgroundColor: 'orange',
-    padding: 12,
-    borderRadius: 8,
-    alignItems: 'center',
-    marginBottom: 15,
+  header: {
+    marginTop: 40,
+    marginBottom: 20,
   },
-  uploadText: {
-    color: '#fff',
-    fontSize: 14,
+  heading: {
+    fontSize: 28,
     fontWeight: 'bold',
+    color: 'orange',
+    textAlign: 'center',
   },
-  listContainer: {
-    paddingBottom: 15,
-  },
-  card: {
-    backgroundColor: '#fff',
-    borderRadius: 10,
-    padding: 8,
-    marginVertical: 6,
-    width: '80%',
+  profileIcon: {
     alignItems: 'center',
-    alignSelf: 'center', // Moves the card to the center
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 3,
+    marginBottom: 20,
   },
-  image: {
-    width: '80%',
-    height: 160,
-    borderRadius: 8,
-    resizeMode: 'cover',
+  formContainer: {
+    marginBottom: 20,
   },
-  name: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: '#444',
-    marginTop: 4,
+  label: {
+    fontSize: 16,
+    marginBottom: 5,
+    color: '#555',
+    fontWeight: '500',
   },
   input: {
+    width: '100%',
+    height: 50,
     borderWidth: 1,
     borderColor: '#ddd',
-    borderRadius: 6,
-    padding: 4,
-    width: '100%',
-    marginTop: 4,
+    borderRadius: 8,
+    paddingHorizontal: 15,
+    fontSize: 16,
+    marginBottom: 15,
+    backgroundColor: '#f9f9f9',
+    color: 'black',
+  },
+  disabledInput: {
+    backgroundColor: '#f0f0f0',
+    color: '#666',
+  },
+  pickerContainer: {
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 8,
+    marginBottom: 15,
+    backgroundColor: '#f9f9f9',
+  },
+  buttonContainer: {
+    marginTop: 10,
+  },
+  button: {
+    backgroundColor: 'orange',
+    padding: 15,
+    borderRadius: 8,
+    marginBottom: 15,
+    alignItems: 'center',
+  },
+  cancelButton: {
+    backgroundColor: '#ff9800',
   },
   saveButton: {
     backgroundColor: 'orange',
-    padding: 6,
-    borderRadius: 4,
-    marginTop: 4,
+    padding: 15,
+    borderRadius: 8,
+    alignItems: 'center',
   },
-  saveText: {
-    color: '#fff',
-    fontSize: 12,
-  },
-  description: {
-    marginTop: 4,
-    textAlign: 'center',
-    fontSize: 12,
-    color: '#555',
-  },
-  editButton: {
-    backgroundColor: 'orange',
-    padding: 4,
-    borderRadius: 4,
-    marginTop: 4,
-  },
-  editText: {
-    color: '#fff',
-    fontSize: 12,
-  },
-  deleteButton: {
-    padding: 4,
-    marginLeft:"60%",
-   
-  },
-  deleteIcon: {
-    fontSize: 16,
-    color: 'orange',
+  buttonText: {
+    fontSize: 18,
+    color: 'white',
+    fontWeight: 'bold',
   },
 });
 

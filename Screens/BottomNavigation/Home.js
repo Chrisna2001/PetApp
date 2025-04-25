@@ -1,5 +1,8 @@
 import React, {useEffect, useState} from 'react';
 import Drawer from '../Drawer/CustomDrawerContent'; 
+import { DrawerActions } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 import {
   View,
   StyleSheet,
@@ -12,14 +15,13 @@ import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import {API_URL} from 'react-native-dotenv';
 import axios from 'axios';
 import AppNavigator from '../Drawer/AppNavigator';
-// import {fetchData} from './utils/ApiService';     
 import {fetchData} from '../utils/ApiService';
 
 const carouselData = [  
   {
     id: '1',
-    name: 'Adopte Pet',
-    image: require('../../assets/images/img/petadopt.jpg'),
+    name: 'Buy Pet',
+    image: require('../../assets/images/img/buypet.jpg'),
   },
   {
     id: '2',
@@ -58,16 +60,16 @@ const carouselData = [
   },
 ];
 
-const Home = ({navigation}) => {
+const Home = ({ route, navigation }) => {
   const [petProfiles, setPetProfiles] = useState([]);
   const [error, setError] = useState(null);
   const [selectedPet, setSelectedPet] = useState(null);
+  const [username, setUsername] = useState('');
 
+  // Load pet profiles
   useEffect(() => {
     const getPetProfiles = async () => {
       try {
-        //  const response = await fetchData('pet-profile/all');
-
         const response = await fetch(
           'https://71e0-2401-4900-1cdf-fe55-7d1d-679f-5133-318f.ngrok-free.app/pet-profile/all',
           {
@@ -75,9 +77,8 @@ const Home = ({navigation}) => {
             headers: {
               'Content-Type': 'application/json',
             },
-          },
+          }
         );
-        
         const data = await response.json();
         console.log(data);
         setPetProfiles(data);
@@ -90,13 +91,37 @@ const Home = ({navigation}) => {
     getPetProfiles();
   }, []);
 
+  // Load username from route params and AsyncStorage
+  useEffect(() => {
+    const loadUsername = async () => {
+      // First check route params (directly from login)
+      if (route.params?.username) {
+        console.log("Username from route params:", route.params.username);
+        setUsername(route.params.username);
+        // Save to AsyncStorage for persistence
+        await AsyncStorage.setItem('username', route.params.username);
+      } else {
+        // If not in route params, try AsyncStorage (for app relaunch)
+        const storedName = await AsyncStorage.getItem('username');
+        console.log("Username from AsyncStorage:", storedName);
+        if (storedName) {
+          setUsername(storedName);
+        }
+      }
+    };
+    
+    loadUsername();
+  }, [route.params]);
+  
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <TouchableOpacity
-  style={styles.drawerIcon}
-  onPress={() => navigation.openDrawer()}>
-  <MaterialIcons name="menu" size={30} color="black" />
-</TouchableOpacity>
+        style={styles.drawerIcon}
+        onPress={() => navigation.dispatch(DrawerActions.openDrawer())}
+      >
+        <MaterialIcons name="menu" size={30} color="black" />
+      </TouchableOpacity>
+      
       <View
         style={{flexDirection: 'row', alignItems: 'center', marginRight: 60}}>
         <View style={{alignItems: 'center'}}>
@@ -118,51 +143,98 @@ const Home = ({navigation}) => {
                 }}>
                 Welcome
               </Text>
-              <Text
-                style={{
-                  fontSize: 30,
-                  color: 'gray',
-                  lineHeight: 30,
-                  marginTop: 10,
-                }}>
-                CHRISNA
-              </Text>
+              <View style={{ padding: 20 }}>
+                <Text
+                  style={{
+                    fontSize: 30,
+                    color: 'gray',
+                    lineHeight: 30,
+                    marginTop: 10,
+                  }}>
+                  {username || 'Guest'}
+                </Text>
+              </View>
             </View>
           </View>
         </View>
       </View>
+      
       <Text style={styles.title}>Add your pet</Text>
-
+      
       <View style={styles.iconWithImagesContainer}>
         <TouchableOpacity
           style={styles.iconContainer}
-          onPress={() => navigation.navigate('Petpro')}>
+          onPress={() => navigation.navigate('Create_ac')}>
           <MaterialIcons name="add" size={24} color="white" />
         </TouchableOpacity>
-
+        
+        <View>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            style={styles.imageScrollView}>
+            {petProfiles.map((pet, index) => (
+              <TouchableOpacity
+                key={index}
+                onPress={() => {
+                  setSelectedPet(pet);
+                  navigation.navigate('PetDisplay', {petId: pet.id});
+                }}
+                style={[
+                  styles.imageContainer,
+                  selectedPet === pet && styles.selectedBorder,
+                ]}>
+                <Image
+                  source={{uri: pet.profilePicture}}
+                  style={styles.smallImage}
+                />
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </View>
+      </View>
+      
+      <View style={{ marginTop: 20 }}>
+        <Text style={{ fontWeight: 'bold', marginLeft: 10, color: 'orange', fontSize: 30, fontWeight: 'bold' }}>
+          Upcoming Events
+        </Text>
         <ScrollView
-          horizontal
+          horizontal={true}
           showsHorizontalScrollIndicator={false}
-          style={styles.imageScrollView}>
-          {petProfiles.map((pet, index) => (
-            <TouchableOpacity
-              key={index}
-              onPress={() => {
-                setSelectedPet(pet);
-                navigation.navigate('PetDisplay', {petId: pet.id});
-              }}
-              style={[
-                styles.imageContainer,
-                selectedPet === pet && styles.selectedBorder,
-              ]}>
-              <Image
-                source={{uri: pet.profilePicture}}
-                style={styles.smallImage}
-              />
-            </TouchableOpacity>
-          ))}
+          style={{flexGrow: 0, marginTop: 10}}
+          contentContainerStyle={{paddingHorizontal: 10}}
+        >
+          <Image
+            source={require('../../assets/images/img/event4.jpg')}
+            style={{
+              width: 320,
+              height: 180,
+              borderRadius: 0,
+              marginRight: 10,
+            }}
+          />
+
+          <Image
+            source={require('../../assets/images/img/event5.jpg')}
+            style={{
+              width: 320,
+              height: 180,
+              borderRadius: 0,
+              marginRight: 10,
+            }}
+          />
+
+          <Image
+            source={require('../../assets/images/img/event6.jpeg')}
+            style={{
+              width: 320,
+              height: 180,
+              borderRadius: 0,
+            }}
+          />
         </ScrollView>
       </View>
+
 
       <Text style={styles.featuresText}>Features</Text>
 
@@ -221,6 +293,13 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   title: {
+    color: 'orange',
+    marginTop: 15,
+    fontWeight: 'bold',
+    fontSize: 24,
+    alignSelf: 'flex-start',
+  },
+  title1: {
     color: 'orange',
     marginTop: 15,
     fontWeight: 'bold',
