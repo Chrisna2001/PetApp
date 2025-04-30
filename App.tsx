@@ -24,7 +24,7 @@ import PetMissing from './Screens/Features/PetMissing';
 import PetEvent from './Screens/Features/PetEvent';
 import DrawerHome from './Screens/Features/DrawerHome';
 import DrawerNavigator from './Screens/Drawer/DrawerNavigator';
-import eventdisplay from './Screens/eventdisplay';
+import Eventdisplay from './Screens/Eventdisplay';
 
 
 
@@ -56,7 +56,7 @@ const App = () => {
         <Stack.Screen name="Grooming" component={Grooming} />
         <Stack.Screen name=" AppNavigator" component={ AppNavigator} />
         <Stack.Screen name='PetMissing' component={PetMissing} />
-        <Stack.Screen name='eventdisplay' component={eventdisplay} />
+        <Stack.Screen name='Eventdisplay' component={Eventdisplay} />
 
         
       </Stack.Navigator>

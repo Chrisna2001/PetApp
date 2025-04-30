@@ -57,7 +57,7 @@ const Profile = ({ navigation }) => {
     <ScrollView style={styles.scrollContainer}>
       <View style={styles.container}>
         <View style={styles.header}>
-          <Text style={styles.heading}> Profile Info</Text>
+          <Text style={styles.heading}>👤 Profile Info</Text>
         </View>
 
         <View style={styles.profileIcon}>
@@ -231,7 +231,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#ff9800',
   },
   saveButton: {
-    backgroundColor: 'orange',
+    backgroundColor: '#4CAF50',
     padding: 15,
     borderRadius: 8,
     alignItems: 'center',

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const API_URL = 'https://3985-2401-4900-1cde-c82a-dc5b-7122-a222-b54c.ngrok-free.app/';
+const API_URL = 'https://bbb6-2401-4900-1cde-c82a-e5cb-607a-c611-46ad.ngrok-free.app/';
 
 // Token management functions
 export const storeAuthToken = async token => {
@@ -73,6 +73,8 @@ export const useMutation = () => {
           options.body = JSON.stringify(data);
         }
       }
+
+      console.log("pasiing url--------->",`${API_URL}${endpoint}`)
 
       const response = await fetch(`${API_URL}${endpoint}`, options);
       const authHeader = response?.headers?.map?.authorization;

@@ -15,7 +15,7 @@ import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import {API_URL} from 'react-native-dotenv';
 import axios from 'axios';
 import AppNavigator from '../Drawer/AppNavigator';
-import {fetchData} from '../utils/ApiService';
+import {fetchData, useMutation} from '../utils/ApiService';
 
 const carouselData = [  
   {
@@ -65,31 +65,28 @@ const Home = ({ route, navigation }) => {
   const [error, setError] = useState(null);
   const [selectedPet, setSelectedPet] = useState(null);
   const [username, setUsername] = useState('');
+    const { fetchData, loading, data } = useMutation();
+  
 
   // Load pet profiles
   useEffect(() => {
-    const getPetProfiles = async () => {
-      try {
-        const response = await fetch(
-          'https://71e0-2401-4900-1cdf-fe55-7d1d-679f-5133-318f.ngrok-free.app/pet-profile/all',
-          {
-            method: 'GET',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-          }
-        );
-        const data = await response.json();
-        console.log(data);
-        setPetProfiles(data);
-      } catch (err) {
-        setError(err.message);
-        console.error('Failed to fetch pet profiles:', err);
-      }
-    };
+    const getPetProfiles = async () =>{
+      try{
+        const response = await fetchData({
+          endpoint:'pets',
+          method:'GET'
+        })
+        console.log("details",response)
+        setPetProfiles(response)
+      }catch (err) {
+            setError(err.message);
+            console.error('Failed to fetch pet profiles:', err);
+    }
 
-    getPetProfiles();
-  }, []);
+  }
+  getPetProfiles()
+
+}, [])
 
   // Load username from route params and AsyncStorage
   useEffect(() => {
@@ -164,7 +161,7 @@ const Home = ({ route, navigation }) => {
       <View style={styles.iconWithImagesContainer}>
         <TouchableOpacity
           style={styles.iconContainer}
-          onPress={() => navigation.navigate('Create_ac')}>
+          onPress={() => navigation.navigate('Petpro')}>
           <MaterialIcons name="add" size={24} color="white" />
         </TouchableOpacity>
         
@@ -185,7 +182,7 @@ const Home = ({ route, navigation }) => {
                   selectedPet === pet && styles.selectedBorder,
                 ]}>
                 <Image
-                  source={{uri: pet.profilePicture}}
+                  source={{uri: pet.imageUrl}}
                   style={styles.smallImage}
                 />
               </TouchableOpacity>
