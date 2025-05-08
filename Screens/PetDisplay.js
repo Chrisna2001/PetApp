@@ -33,7 +33,7 @@ const PetDisplay = ({ route }) => {
   const fetchPetDetails = async (petId) => {
     try {
       const response = await callApi({
-        endpoint: `pets/${petId}`,
+        endpoint: `pets/${petId}`, // Corrected endpoint URL
         method: 'GET',
       });
       setPetDetails(response);
@@ -62,8 +62,7 @@ const PetDisplay = ({ route }) => {
         <Text style={styles.info}>Age: {petDetails?.age ?? ''}</Text>
         <Text style={styles.info}>Sex: {petDetails?.sex ?? ''}</Text>
         <Text style={styles.info}>Type: {petDetails?.type ?? ''}</Text>
-        <Text style={styles.info}>dob: {petDetails?.dob ?? ''}</Text>
-
+        <Text style={styles.info}>DOB: {petDetails?.dob ?? ''}</Text>
 
         <TouchableOpacity
           style={styles.plusButton}

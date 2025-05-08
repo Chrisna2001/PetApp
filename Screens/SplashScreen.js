@@ -2,11 +2,22 @@ import {StyleSheet, Text, View} from 'react-native';
 import React, {useEffect} from 'react';
 import Logo from '../assets/images/login.svg';
 import * as Keychain from 'react-native-keychain';
+import { getAuthToken } from './utils/ApiService';
 
 const SplashScreen = ({navigation}) => {
   useEffect(() => {
-    setTimeout(confirm, 5000);
-  }, []);
+    const verification = async ()=>{
+      const token = await getAuthToken();
+      if(token){
+        setTimeout(()=>navigation.navigate('Home'),5000);
+      }else{
+        setTimeout(()=>navigation.navigate('Register'),5000)
+      }
+    };
+    verification();
+  });
+
+ 
 
   console.log('reached here...................');
 

@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, TextInput, TouchableOpacity, Alert, ScrollView 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { Picker } from '@react-native-picker/picker';
-import { useMutation } from '../utils/ApiService';
+import { removeAuthToken, useMutation } from '../utils/ApiService';
 
 const Profile = ({ navigation }) => {
   const [isEditing, setIsEditing] = useState(false);
@@ -52,6 +52,10 @@ const Profile = ({ navigation }) => {
       Alert.alert('Error', 'Failed to update profile data');
     }
   };
+  const handlelogout =() =>{
+    removeAuthToken();
+    navigation.navigate('SplashScreen')
+  }
 
   return (
     <ScrollView style={styles.scrollContainer}>
@@ -156,6 +160,10 @@ const Profile = ({ navigation }) => {
             </TouchableOpacity>
           )}
         </View>
+        {!isEditing &&(<TouchableOpacity style={{backgroundColor:"orange",padding:17,borderRadius:10}}onPress={()=>handlelogout()}>
+          <Text style={{textAlign:"center",color:"white",fontSize:20,fontWeight:"bold"}}>Logout</Text>
+        </TouchableOpacity>)}
+        
       </View>
     </ScrollView>
   );

@@ -25,6 +25,8 @@ import PetEvent from './Screens/Features/PetEvent';
 import DrawerHome from './Screens/Features/DrawerHome';
 import DrawerNavigator from './Screens/Drawer/DrawerNavigator';
 import Eventdisplay from './Screens/Eventdisplay';
+import ShopDetails from './Screens/ShopDisplay';
+import AppointmentPage from './Screens/AppointmentPage';
 
 
 
@@ -57,6 +59,8 @@ const App = () => {
         <Stack.Screen name=" AppNavigator" component={ AppNavigator} />
         <Stack.Screen name='PetMissing' component={PetMissing} />
         <Stack.Screen name='Eventdisplay' component={Eventdisplay} />
+        <Stack.Screen name='ShopDetails' component={ShopDetails} />
+        <Stack.Screen name='AppointmentPage' component={AppointmentPage} />
 
         
       </Stack.Navigator>

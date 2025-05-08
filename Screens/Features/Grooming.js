@@ -1,107 +1,58 @@
-import React from 'react';
-import { View, Text, Image, FlatList, StyleSheet } from 'react-native';
-
-const petGroomingStores = [
-  {
-    id: '1',
-    name: 'Betterpaws',
-    rating: '4.9',
-    reviews: 117,
-    type: 'Pet groomer',
-    location: 'Kakkanad, Kerala',
-    closingTime: '9 pm',
-    image: require('../../assets/images/img/cat1.jpg'),
-  },
-  {
-    id: '2',
-    name: 'Roms N Raks Pet Hypermarket and Grooming',
-    rating: '4.6',
-    reviews: 294,
-    type: 'Pet store',
-    location: 'Chittethukara, Seaport - Airport Rd',
-    closingTime: '10 pm',
-    image: require('../../assets/images/img/cat4.jpg'),
-  },
-  {
-    id: '3',
-    name: 'Rainforest Pets & Plants',
-    rating: '4.8',
-    reviews: 773,
-    type: 'Pet groomer',
-    location: 'Kakkanad, Kochi, Kerala',
-    closingTime: '10 pm',
-    image: require('../../assets/images/img/cat.png'),
-  },
-  {
-    id: '4',
-    name: 'Roms N Raks Pet Hypermarket and Grooming',
-    rating: '4.6',
-    reviews: 294,
-    type: 'Pet store',
-    location: 'Chittethukara, Seaport - Airport Rd',
-    closingTime: '10 pm',
-    image: require('../../assets/images/img/cat4.jpg'),
-  },
-  {
-    id: '5',
-    name: 'Roms N Raks Pet Hypermarket and Grooming',
-    rating: '4.6',
-    reviews: 294,
-    type: 'Pet store',
-    location: 'Chittethukara, Seaport - Airport Rd',
-    closingTime: '10 pm',
-    image: require('../../assets/images/img/cat4.jpg'),
-  },
-  {
-    id: '6',
-    name: 'Roms N Raks Pet Hypermarket and Grooming',
-    rating: '4.6',
-    reviews: 294,
-    type: 'Pet store',
-    location: 'Chittethukara, Seaport - Airport Rd',
-    closingTime: '10 pm',
-    image: require('../../assets/images/img/cat4.jpg'),
-  },
-  {
-    id: '7',
-    name: 'Roms N Raks Pet Hypermarket and Grooming',
-    rating: '4.6',
-    reviews: 294,
-    type: 'Pet store',
-    location: 'Chittethukara, Seaport - Airport Rd',
-    closingTime: '10 pm',
-    image: require('../../assets/images/img/cat4.jpg'),
-  },
-  {
-    id: '8',
-    name: 'Roms N Raks Pet Hypermarket and Grooming',
-    rating: '4.6',
-    reviews: 294,
-    type: 'Pet store',
-    location: 'Chittethukara, Seaport - Airport Rd',
-    closingTime: '10 pm',
-    image: require('../../assets/images/img/cat4.jpg'),
-  },
-];
+import React, { useEffect, useState } from 'react';
+import { View, Text, Image, FlatList, StyleSheet, TouchableOpacity } from 'react-native';
+import { useMutation } from '../utils/ApiService'; // Adjust the path if different
+import { useNavigation } from '@react-navigation/native'; // Import navigation hook
 
 const Groom = () => {
+  const [shops, setShops] = useState([]);
+  const { fetchData } = useMutation();
+  const navigation = useNavigation(); // Use the navigation hook
+
+  useEffect(() => {
+    fetchShopData();
+  }, []);
+
+  const fetchShopData = async () => {
+    const response = await fetchData({
+      endpoint: 'shops',
+      method: 'GET',
+    });
+
+    if (response && Array.isArray(response)) {
+      setShops(response);
+    }
+  };
+
+  const renderItem = ({ item }) => (
+    <TouchableOpacity
+      style={styles.card}
+      onPress={() => navigation.navigate('ShopDetails', { shopId: item.id })} // Navigate to ShopDetails page
+    >
+      <Image
+        source={{ uri: item.profileImage }}
+        style={styles.image}
+      />
+      <View style={styles.textContainer}>
+        <Text style={styles.title}>{item.storeName}</Text>
+        <Text style={styles.details}>Owner: {item.ownerName}</Text>
+        <Text style={styles.details}>{item.phoneNumber}</Text>
+        <Text style={styles.details}>{item.zone.toUpperCase()} Zone</Text>
+        <Text style={styles.details}>
+          Services: {item.servicesSubcategories?.join(', ')}
+        </Text>
+        <Text style={styles.details}>Open • Verified: {item.isVerified ? 'Yes' : 'No'}</Text>
+      </View>
+    </TouchableOpacity>
+  );
+
   return (
     <View style={styles.container}>
       <Text style={styles.header}>Pet Grooming Stores</Text>
       <FlatList
-        data={petGroomingStores}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <View style={styles.card}>
-            <Image source={item.image} style={styles.image} />
-            <View style={styles.textContainer}>
-              <Text style={styles.title}>{item.name}</Text>
-              <Text style={styles.details}>{item.rating}  ({item.reviews}) - {item.type}</Text>
-              <Text style={styles.details}>{item.location}</Text>
-              <Text style={styles.details}>Open • Closes {item.closingTime}</Text>
-            </View>
-          </View>
-        )}
+        data={shops}
+        keyExtractor={(item) => item.id.toString()}
+        renderItem={renderItem}
+        ListEmptyComponent={<Text style={{ textAlign: 'center', marginTop: 20 }}>No shops found</Text>}
       />
     </View>
   );
@@ -117,8 +68,9 @@ const styles = StyleSheet.create({
     fontSize: 30,
     fontWeight: 'bold',
     textAlign: 'center',
-    color:"orange",
-    marginTop:50,
+    color: 'orange',
+    marginTop: 50,
+    marginBottom: 10,
   },
   card: {
     flexDirection: 'row',
