@@ -24,7 +24,7 @@ const PetGroomingAppointmentScreen = () => {
   const [showTimePicker, setShowTimePicker] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
-  const { fetchData, loading, data } = useMutation();
+  const { fetchData, loading } = useMutation();
 
   
   // Service options
@@ -143,20 +143,18 @@ const PetGroomingAppointmentScreen = () => {
 
     try {
       // Make API call to the /appointments endpoint
-      const response = await fetchData({
-        endpoint:'appointments',
-        method:'POST',
-        data:appointmentData
-    })
-      // Process response
-      if (!response.ok) {
-        // If response is not 2xx, throw error
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || `Server responded with status: ${response.status}`);
+      const result = await fetchData({
+        endpoint: 'appointments',
+        method: 'POST',
+        data: appointmentData
+      });
+      
+      // Check if result exists and has required properties
+      if (!result) {
+        throw new Error('No response received from the server');
       }
-
-      const responseData = await response.json();
-      console.log('Appointment created:', responseData);
+      
+      console.log('Appointment created:', result);
       
       // Show success message
       Alert.alert(
@@ -166,7 +164,7 @@ const PetGroomingAppointmentScreen = () => {
       );
       
       // Reset form or navigate to confirmation screen if needed
-      // navigation.navigate('AppointmentConfirmation', { appointmentId: responseData.id });
+      // navigation.navigate('AppointmentConfirmation', { appointmentId: result.id });
       
     } catch (err) {
       console.error('Error scheduling appointment:', err);

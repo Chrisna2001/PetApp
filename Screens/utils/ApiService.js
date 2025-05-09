@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const API_URL ='https://156a-2401-4900-1cde-a948-78e8-7b4d-7d99-8b41.ngrok-free.app/';
+const API_URL ='https://5671-2401-4900-1cde-a948-289e-adcf-e6e2-7213.ngrok-free.app/';
 
 // Token management functions
 export const storeAuthToken = async token => {
