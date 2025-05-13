@@ -27,6 +27,7 @@ import DrawerNavigator from './Screens/Drawer/DrawerNavigator';
 import Eventdisplay from './Screens/Eventdisplay';
 import ShopDetails from './Screens/ShopDisplay';
 import AppointmentPage from './Screens/AppointmentPage';
+import Viewappoinments from './Screens/Viewappoinments'
 
 
 
@@ -61,6 +62,7 @@ const App = () => {
         <Stack.Screen name='Eventdisplay' component={Eventdisplay} />
         <Stack.Screen name='ShopDetails' component={ShopDetails} />
         <Stack.Screen name='AppointmentPage' component={AppointmentPage} />
+        <Stack.Screen name='Viewappoinments' component={Viewappoinments} />
 
         
       </Stack.Navigator>

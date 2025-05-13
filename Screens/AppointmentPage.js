@@ -15,7 +15,7 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { Checkbox } from 'react-native-paper';
 import { useMutation } from './utils/ApiService';
 
-const PetGroomingAppointmentScreen = () => {
+const PetGroomingAppointmentScreen = ({ navigation }) => {
   // State variables
   const [appointmentDate, setAppointmentDate] = useState(new Date());
   const [appointmentTime, setAppointmentTime] = useState(new Date());
@@ -26,7 +26,6 @@ const PetGroomingAppointmentScreen = () => {
   const [error, setError] = useState(null);
   const { fetchData, loading } = useMutation();
 
-  
   // Service options
   const serviceTypes = [
     { id: 'grooming', label: 'Grooming' },
@@ -34,7 +33,7 @@ const PetGroomingAppointmentScreen = () => {
     { id: 'daycare', label: 'Daycare' },
     { id: 'veterinary', label: 'Veterinary Check-up' },
   ];
-  
+
   const [selectedService, setSelectedService] = useState('grooming');
 
   // Subservices options depending on main service
@@ -160,11 +159,14 @@ const PetGroomingAppointmentScreen = () => {
       Alert.alert(
         "Appointment Scheduled",
         `Your pet's appointment has been successfully scheduled for ${formatDate(appointmentDate)} at ${formatTime(appointmentTime)}`,
-        [{ text: "OK" }]
+        [{
+          text: "OK", 
+          onPress: () => {
+            // Navigate to Cart and pass userId in the navigation params
+            navigation.navigate('Viewappoinments', { userId: result.userId });
+          }
+        }]
       );
-      
-      // Reset form or navigate to confirmation screen if needed
-      // navigation.navigate('AppointmentConfirmation', { appointmentId: result.id });
       
     } catch (err) {
       console.error('Error scheduling appointment:', err);
@@ -191,18 +193,10 @@ const PetGroomingAppointmentScreen = () => {
           {serviceTypes.map((service) => (
             <TouchableOpacity
               key={service.id}
-              style={[
-                styles.serviceButton,
-                selectedService === service.id && styles.selectedServiceButton
-              ]}
+              style={[styles.serviceButton, selectedService === service.id && styles.selectedServiceButton]}
               onPress={() => handleServiceChange(service.id)}
             >
-              <Text 
-                style={[
-                  styles.serviceButtonText,
-                  selectedService === service.id && styles.selectedServiceText
-                ]}
-              >
+              <Text style={[styles.serviceButtonText, selectedService === service.id && styles.selectedServiceText]}>
                 {service.label}
               </Text>
             </TouchableOpacity>
@@ -226,10 +220,7 @@ const PetGroomingAppointmentScreen = () => {
 
         {/* Date Picker */}
         <Text style={styles.sectionTitle}>Select Date</Text>
-        <TouchableOpacity 
-          style={styles.dateTimeButton}
-          onPress={() => setShowDatePicker(true)}
-        >
+        <TouchableOpacity style={styles.dateTimeButton} onPress={() => setShowDatePicker(true)}>
           <Text style={styles.dateTimeText}>{formatDate(appointmentDate)}</Text>
         </TouchableOpacity>
         
@@ -245,10 +236,7 @@ const PetGroomingAppointmentScreen = () => {
 
         {/* Time Picker */}
         <Text style={styles.sectionTitle}>Select Time</Text>
-        <TouchableOpacity 
-          style={styles.dateTimeButton}
-          onPress={() => setShowTimePicker(true)}
-        >
+        <TouchableOpacity style={styles.dateTimeButton} onPress={() => setShowTimePicker(true)}>
           <Text style={styles.dateTimeText}>{formatTime(appointmentTime)}</Text>
         </TouchableOpacity>
         
@@ -281,13 +269,13 @@ const PetGroomingAppointmentScreen = () => {
         )}
 
         {/* Submit Button */}
-        <TouchableOpacity 
-          style={[styles.submitButton, isLoading && styles.disabledButton]} 
+        <TouchableOpacity
+          style={styles.submitButton}
           onPress={handleSubmit}
           disabled={isLoading}
         >
           {isLoading ? (
-            <ActivityIndicator color="#FFFFFF" size="small" />
+            <ActivityIndicator color="#fff" />
           ) : (
             <Text style={styles.submitButtonText}>Schedule Appointment</Text>
           )}
@@ -300,115 +288,92 @@ const PetGroomingAppointmentScreen = () => {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#fff',
   },
   container: {
-    flex: 1,
-    padding: 16,
+    padding: 20,
   },
   header: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#333',
     marginBottom: 20,
-    textAlign: 'center',
   },
   sectionTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#555',
-    marginTop: 16,
-    marginBottom: 8,
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginTop: 10,
   },
   serviceContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    marginBottom: 10,
+    marginVertical: 10,
   },
   serviceButton: {
-    width: '48%',
-    padding: 12,
-    borderRadius: 8,
-    backgroundColor: '#F0F0F0',
-    alignItems: 'center',
-    marginBottom: 10,
+    padding: 10,
+    margin: 5,
     borderWidth: 1,
-    borderColor: '#E0E0E0',
+    borderColor: '#ccc',
+    borderRadius: 5,
   },
   selectedServiceButton: {
     backgroundColor: '#4CAF50',
-    borderColor: '#4CAF50',
   },
   serviceButtonText: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: '#333',
+    fontSize: 16,
   },
   selectedServiceText: {
-    color: '#FFFFFF',
+    color: '#fff',
   },
   subServiceContainer: {
-    marginBottom: 16,
+    marginVertical: 10,
   },
   checkboxContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginVertical: 4,
+    marginVertical: 5,
   },
   checkboxLabel: {
-    marginLeft: 8,
-    fontSize: 14,
-    color: '#333',
+    fontSize: 16,
   },
   dateTimeButton: {
-    padding: 12,
-    backgroundColor: '#F0F0F0',
-    borderRadius: 8,
-    marginBottom: 16,
+    padding: 10,
     borderWidth: 1,
-    borderColor: '#E0E0E0',
+    borderColor: '#ccc',
+    borderRadius: 5,
+    marginTop: 10,
   },
   dateTimeText: {
     fontSize: 16,
-    color: '#333',
   },
   notesInput: {
+    marginTop: 10,
     borderWidth: 1,
-    borderColor: '#E0E0E0',
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 24,
-    textAlignVertical: 'top',
-    minHeight: 100,
+    borderColor: '#ccc',
+    padding: 10,
+    borderRadius: 5,
+    fontSize: 16,
+    height: 100,
   },
   submitButton: {
     backgroundColor: '#4CAF50',
-    padding: 16,
-    borderRadius: 8,
+    padding: 15,
+    borderRadius: 5,
+    marginTop: 20,
     alignItems: 'center',
-    marginBottom: 30,
   },
   submitButtonText: {
-    color: '#FFFFFF',
+    color: '#fff',
     fontSize: 16,
-    fontWeight: '600',
-  },
-  disabledButton: {
-    backgroundColor: '#A5D6A7',
-    opacity: 0.7,
   },
   errorContainer: {
-    backgroundColor: '#FFEBEE',
-    padding: 12,
-    borderRadius: 8,
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: '#FFCDD2',
+    backgroundColor: '#f8d7da',
+    padding: 10,
+    borderRadius: 5,
+    marginTop: 10,
   },
   errorText: {
-    color: '#D32F2F',
-    fontSize: 14,
+    color: '#721c24',
+    fontSize: 16,
   },
 });
 

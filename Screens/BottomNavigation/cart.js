@@ -1,146 +1,236 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { View, StyleSheet, Image, Text, TouchableOpacity, FlatList, Dimensions, ScrollView } from 'react-native';
-import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import React, { useState, useEffect } from 'react';
+import { View, Text, FlatList, ActivityIndicator, StyleSheet, Button, Alert } from 'react-native';
 
-const { width, height } = Dimensions.get('window');
+const AppointmentScreen = ({ route, navigation }) => {
+  // Get userId from route params with proper fallback handling
+  // Using optional chaining and nullish coalescing for safety
+  const userId = route?.params?.userId || null;
+  
+  const [appointments, setAppointments] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-const images = [
-  require('../../assets/images/img/cat1.jpg'),
-  require('../../assets/images/img/dog3.jpg'),
-  require('../../assets/images/img/cat4.jpg'),
-  require('../../assets/images/img/petadopt.jpg'),
-];
+  // Debug function to show the current state
+  const debugState = () => {
+    Alert.alert(
+      "Debug Info",
+      `Route params: ${JSON.stringify(route?.params)}\nUser ID: ${userId}`,
+      [{ text: "OK" }]
+    );
+  };
 
-const SkipPage = ({ navigation }) => {
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const flatListRef = useRef(null);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      let nextIndex = (currentImageIndex + 1) % images.length;
-      setCurrentImageIndex(nextIndex);
-      flatListRef.current?.scrollToIndex({ index: nextIndex, animated: true });
-    }, 3000);
-
-    return () => clearInterval(interval);
-  }, [currentImageIndex]);
-
-  const onViewableItemsChanged = useRef(({ viewableItems }) => {
-    if (viewableItems.length > 0) {
-      setCurrentImageIndex(viewableItems[0].index);
+  // Fetch appointments from the API
+  const fetchAppointments = async (id) => {
+    // Verify we have a valid ID
+    if (!id) {
+      setError('User ID is required');
+      setLoading(false);
+      return;
     }
-  }).current;
+    
+    setLoading(true);
+    try {
+      console.log('Fetching appointments for userId:', id);
+      
+      // Replace with your actual API URL
+      const apiUrl = `https://your-api-url.com/appointments?userId=${id}`;
+      console.log('API URL:', apiUrl);
+      
+      const response = await fetch(apiUrl);
+      
+      // Get raw response text for debugging
+      const responseText = await response.text();
+      console.log('Raw API response:', responseText.substring(0, 200));
+      
+      if (!response.ok) {
+        throw new Error(`API returned status: ${response.status}`);
+      }
+      
+      // Try to parse the text as JSON
+      let data;
+      try {
+        data = JSON.parse(responseText);
+      } catch (jsonError) {
+        console.error('JSON Parse Error:', jsonError);
+        throw new Error(`Invalid JSON response from server. Response starts with: ${responseText.substring(0, 50)}...`);
+      }
+      
+      if (Array.isArray(data)) {
+        setAppointments(data);
+        console.log(`Loaded ${data.length} appointments`);
+      } else {
+        console.warn('API did not return an array:', data);
+        setAppointments([]);
+      }
+    } catch (err) {
+      console.error('Error fetching appointments:', err);
+      setError(`Failed to fetch appointments: ${err.message}`);
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  // Effect to run when component mounts or userId changes
+  useEffect(() => {
+    console.log('AppointmentScreen mounted with route params:', JSON.stringify(route?.params));
+    console.log('User ID from params:', userId);
+    
+    // Only attempt to fetch if we have a userId
+    if (userId) {
+      fetchAppointments(userId);
+    } else {
+      setLoading(false);
+      setError('No user ID found. Please ensure you navigated to this screen correctly.');
+    }
+  }, [userId]);
+
+  // Function to load demo data for testing
+  const loadDemoData = () => {
+    const demoUserId = 'demo123'; // Replace with your demo user ID
+    console.log('Loading demo data with ID:', demoUserId);
+    fetchAppointments(demoUserId);
+  };
+
+  // Show loading indicator while fetching data
+  if (loading) {
+    return (
+      <View style={styles.centered}>
+        <ActivityIndicator size="large" color="#0000ff" />
+        <Text style={styles.loadingText}>Loading appointments...</Text>
+      </View>
+    );
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <View style={styles.centered}>
+        <Text style={styles.errorText}>{error}</Text>
+        <View style={styles.buttonContainer}>
+          <Button 
+            title="Debug Info" 
+            onPress={debugState} 
+          />
+          <Button 
+            title="Load Demo Data" 
+            onPress={loadDemoData} 
+          />
+          <Button 
+            title="Go Back" 
+            onPress={() => navigation.goBack()} 
+          />
+        </View>
+      </View>
+    );
+  }
+
+  // Show appointment list or empty state
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-     
-      <TouchableOpacity style={styles.drawerIcon} onPress={() => navigation.CustomDrawerContent()}>
-        <MaterialIcons name="menu" size={30} color="black" />
-      </TouchableOpacity>
-
-      {/* Image Carousel */}
-      <FlatList
-        ref={flatListRef}
-        data={images}
-        horizontal
-        pagingEnabled
-        showsHorizontalScrollIndicator={false}
-        keyExtractor={(item, index) => index.toString()}
-        renderItem={({ item }) => (
-          <Image source={item} style={styles.bannerImage} />
-        )}
-        onViewableItemsChanged={onViewableItemsChanged}
-        viewabilityConfig={{ viewAreaCoveragePercentThreshold: 50 }}
-      />
-
-      {/* Dots Indicator */}
-      <View style={styles.dotsContainer}>
-        {images.map((_, index) => (
-          <View key={index} style={[styles.dot, currentImageIndex === index && styles.activeDot]} />
-        ))}
+    <View style={styles.container}>
+      <View style={styles.header}>
+        <Text style={styles.headerText}>Appointments</Text>
+        <Text style={styles.subHeaderText}>User ID: {userId}</Text>
       </View>
-
-      <View style={styles.textContainer}>
-        <Text style={styles.title}>Add your pet</Text>
-        <Text style={styles.description}>Join our pet-loving community today!</Text>
-      </View>
-
-      <TouchableOpacity style={styles.button}>
-        <Text style={styles.buttonText}>Get Started</Text>
-      </TouchableOpacity>
-    </ScrollView>
+      
+      {appointments.length === 0 ? (
+        <View style={styles.centered}>
+          <Text>No appointments available</Text>
+          <Button 
+            title="Refresh" 
+            onPress={() => fetchAppointments(userId)}
+            style={styles.refreshButton} 
+          />
+        </View>
+      ) : (
+        <FlatList
+          data={appointments}
+          keyExtractor={(item) => item.id.toString()}
+          renderItem={({ item }) => (
+            <View style={styles.card}>
+              <Text style={styles.date}>{item.date}</Text>
+              <Text style={styles.time}>{item.time}</Text>
+              <Text style={styles.description}>{item.description}</Text>
+            </View>
+          )}
+          refreshing={loading}
+          onRefresh={() => fetchAppointments(userId)}
+        />
+      )}
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    flexGrow: 1,
+    flex: 1,
+    padding: 20,
+    backgroundColor: '#fff',
+  },
+  centered: {
+    flex: 1,
+    justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingBottom: 30,
-    backgroundColor: '#f8f9fa',
+    padding: 20,
   },
-  drawerIcon: {
-    position: 'absolute',
-    top: 10,
-    left: 10,
-    zIndex: 10,
-  },
-  bannerImage: {
-    height: height * 0.4,
-    width: width - 40,
-    borderRadius: 15,
-    resizeMode: 'cover',
-    marginTop: 40,
+  card: {
+    padding: 15,
+    marginBottom: 15,
+    backgroundColor: '#f1f1f1',
+    borderRadius: 8,
+    elevation: 2,
     shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.2,
-    shadowRadius: 5,
-    elevation: 5,
+    shadowRadius: 2,
   },
-  dotsContainer: {
-    flexDirection: 'row',
-    alignSelf: 'center',
-    marginTop: 10,
-  },
-  dot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: '#bbb',
-    marginHorizontal: 5,
-  },
-  activeDot: {
-    backgroundColor: 'orange',
-    width: 10,
-    height: 10,
-  },
-  textContainer: {
+  header: {
+    marginBottom: 20,
     alignItems: 'center',
-    marginTop: 15,
   },
-  title: {
-    color: 'orange',
-    fontWeight: 'bold',
+  headerText: {
     fontSize: 24,
-  },
-  description: {
-    fontSize: 16,
-    color: '#666',
+    fontWeight: 'bold',
     textAlign: 'center',
+  },
+  subHeaderText: {
+    fontSize: 14,
+    color: '#666',
     marginTop: 5,
   },
-  button: {
-    backgroundColor: 'orange',
-    paddingVertical: 12,
-    paddingHorizontal: 25,
-    borderRadius: 8,
-    marginTop: 20,
-  },
-  buttonText: {
-    color: 'white',
+  date: {
     fontSize: 18,
     fontWeight: 'bold',
   },
+  time: {
+    fontSize: 16,
+    color: '#888',
+    marginTop: 4,
+  },
+  description: {
+    fontSize: 14,
+    color: '#555',
+    marginTop: 8,
+  },
+  errorText: {
+    color: 'red',
+    fontSize: 16,
+    marginBottom: 20,
+    textAlign: 'center',
+    paddingHorizontal: 30,
+  },
+  loadingText: {
+    marginTop: 10,
+    color: '#666',
+  },
+  buttonContainer: {
+    marginTop: 20,
+    width: '100%',
+    justifyContent: 'space-around',
+    flexDirection: 'row',
+  },
+  refreshButton: {
+    marginTop: 15,
+  },
 });
 
-export default SkipPage;
+export default AppointmentScreen;
