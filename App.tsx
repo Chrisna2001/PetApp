@@ -1,6 +1,7 @@
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
+import './Screens/PushNotificationConfig'
 import Login from './Screens/Login';
 import Register from './Screens/Register';
 import SplashScreen from './Screens/SplashScreen';
@@ -27,9 +28,7 @@ import DrawerNavigator from './Screens/Drawer/DrawerNavigator';
 import Eventdisplay from './Screens/Eventdisplay';
 import ShopDetails from './Screens/ShopDisplay';
 import AppointmentPage from './Screens/AppointmentPage';
-import Viewappoinments from './Screens/Viewappoinments'
-
-
+import Viewappoinments from './Screens/Viewappoinments';
 
 
 

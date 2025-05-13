@@ -10,7 +10,8 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { fetchData, useMutation } from './utils/ApiService';
+import PushNotification from 'react-native-push-notification';
+import { fetchData, useMutation } from './utils/ApiService'; // Make sure your ApiService file is correct
 
 const PetDisplay = ({ route }) => {
   const { petId } = route.params;
@@ -22,6 +23,7 @@ const PetDisplay = ({ route }) => {
   const [groomDate, setGroomDate] = useState(new Date());
   const [walkTime, setWalkTime] = useState(new Date());
   const [vaccineDate, setVaccineDate] = useState(new Date());
+
   const [showGroomPicker, setShowGroomPicker] = useState(false);
   const [showWalkPicker, setShowWalkPicker] = useState(false);
   const [showVaccinePicker, setShowVaccinePicker] = useState(false);
@@ -33,7 +35,7 @@ const PetDisplay = ({ route }) => {
   const fetchPetDetails = async (petId) => {
     try {
       const response = await callApi({
-        endpoint: `pets/${petId}`, // Corrected endpoint URL
+        endpoint: `pets/${petId}`,
         method: 'GET',
       });
       setPetDetails(response);
@@ -42,6 +44,20 @@ const PetDisplay = ({ route }) => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const sendNotification = (title, message, date) => {
+    const fireDate = new Date(date);
+
+    PushNotification.localNotificationSchedule({
+      channelId: "pet-care",
+      title,
+      message,
+      date: fireDate,
+      allowWhileIdle: true,
+      playSound: true,
+      soundName: 'default',
+    });
   };
 
   if (loading) {
@@ -90,8 +106,15 @@ const PetDisplay = ({ route }) => {
                   mode="date"
                   display="default"
                   onChange={(event, date) => {
-                    setShowGroomPicker(Platform.OS === 'ios');
-                    if (date) setGroomDate(date);
+                    setShowGroomPicker(false);
+                    if (date) {
+                      setGroomDate(date);
+                      sendNotification(
+                        'Grooming Reminder',
+                        `Grooming scheduled for ${date.toDateString()}`,
+                        date
+                      );
+                    }
                   }}
                 />
               )}
@@ -115,8 +138,15 @@ const PetDisplay = ({ route }) => {
                   mode="time"
                   display="default"
                   onChange={(event, date) => {
-                    setShowWalkPicker(Platform.OS === 'ios');
-                    if (date) setWalkTime(date);
+                    setShowWalkPicker(false);
+                    if (date) {
+                      setWalkTime(date);
+                      sendNotification(
+                        'Walk Reminder',
+                        `Walk scheduled at ${date.toLocaleTimeString()}`,
+                        date
+                      );
+                    }
                   }}
                 />
               )}
@@ -140,8 +170,15 @@ const PetDisplay = ({ route }) => {
                   mode="date"
                   display="default"
                   onChange={(event, date) => {
-                    setShowVaccinePicker(Platform.OS === 'android');
-                    if (date) setVaccineDate(date);
+                    setShowVaccinePicker(false);
+                    if (date) {
+                      setVaccineDate(date);
+                      sendNotification(
+                        'Vaccination Reminder',
+                        `Vaccination scheduled for ${date.toDateString()}`,
+                        date
+                      );
+                    }
                   }}
                 />
               )}

@@ -1,21 +1,13 @@
-buildscript {
-    ext {
-        buildToolsVersion = "35.0.0"
-        minSdkVersion = 24
-        compileSdkVersion = 35
-        targetSdkVersion = 35
-        ndkVersion = "27.1.12297006"
-        kotlinVersion = "2.0.21"
-    }
-    repositories {
-        google()
-        mavenCentral()
-    }
-    dependencies {
-        classpath("com.android.tools.build:gradle")
-        classpath("com.facebook.react:react-native-gradle-plugin")
-        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin")
-    }
-}
+dependencies {
+    // React Native dependencies
+    implementation 'com.facebook.react:react-native:+'
 
-apply plugin: "com.facebook.react.rootproject"
+    // Kotlin dependencies
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
+
+    // AndroidX dependencies (replace support libraries with AndroidX)
+    implementation 'androidx.core:core:1.13.1'
+
+    // Remove the old support-compat library if you have it
+    // implementation 'com.android.support:support-compat:27.1.1' <-- REMOVE THIS
+}
