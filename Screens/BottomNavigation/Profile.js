@@ -1,12 +1,23 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, Alert, ScrollView } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TextInput,
+  TouchableOpacity,
+  Alert,
+  ScrollView,
+  Image,
+} from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { Picker } from '@react-native-picker/picker';
+import { launchImageLibrary } from 'react-native-image-picker';
 import { removeAuthToken, useMutation } from '../utils/ApiService';
 
 const Profile = ({ navigation }) => {
   const [isEditing, setIsEditing] = useState(false);
+  const [profileImage, setProfileImage] = useState(null);
   const [profileData, setProfileData] = useState({
     name: '',
     username: '',
@@ -16,18 +27,41 @@ const Profile = ({ navigation }) => {
     sex: '',
     Location: ''
   });
+  const [profileId, setProfileId] = useState(null);
 
   const { fetchData, loading, data } = useMutation();
 
   useEffect(() => {
-    fetchuserinfo();
+    fetchUserInfo();
+    loadProfileImage();
   }, []);
 
-  const fetchuserinfo = async () => {
+  const loadProfileImage = async () => {
+    const imageUri = await AsyncStorage.getItem('profileImage');
+    if (imageUri) {
+      setProfileImage(imageUri);
+    }
+  };
+
+  const pickImage = async () => {
+    const result = await launchImageLibrary({
+      mediaType: 'photo',
+      quality: 1,
+    });
+
+    if (result?.assets && result.assets.length > 0) {
+      const imageUri = result.assets[0].uri;
+      setProfileImage(imageUri);
+      await AsyncStorage.setItem('profileImage', imageUri);
+    }
+  };
+
+  const fetchUserInfo = async () => {
     const response = await fetchData({
       endpoint: 'users/me',
       method: 'GET'
     });
+
     if (response) {
       setProfileData({
         name: response.name || '',
@@ -36,26 +70,62 @@ const Profile = ({ navigation }) => {
         phoneNumber: response.phoneNumber || '',
         age: response.age || '',
         sex: response.sex || '',
-        Location: response.Location || ''
+        Location: response.currentLocation || ''
       });
+
+      if (response.id) {
+        setProfileId(response.id);
+      }
     }
+  };
+
+  const validateAge = (age) => {
+    const ageNum = parseInt(age, 10);
+    if (isNaN(ageNum)) return { isValid: false, message: 'Age must be a number' };
+    if (ageNum < 0) return { isValid: false, message: 'Age cannot be negative' };
+    if (ageNum > 120) return { isValid: false, message: 'Age cannot exceed 120' };
+    return { isValid: true };
   };
 
   const saveProfileData = async () => {
     try {
+      const ageValidation = validateAge(profileData.age);
+      if (!ageValidation.isValid) {
+        Alert.alert('Validation Error', ageValidation.message);
+        return;
+      }
+
       await AsyncStorage.setItem('userProfile', JSON.stringify(profileData));
       await AsyncStorage.setItem('username', profileData.username);
-      setIsEditing(false);
-      Alert.alert('Success', 'Profile updated successfully!');
+
+      const updateData = {
+        age: parseInt(profileData.age, 10),
+        sex: profileData.sex,
+        currentLocation: profileData.Location
+      };
+
+      const response = await fetchData({
+        endpoint: 'profile',
+        method: 'PUT',
+        data: updateData
+      });
+
+      if (response) {
+        setIsEditing(false);
+        Alert.alert('Success', 'Profile updated successfully!');
+      } else {
+        Alert.alert('Error', 'Failed to update profile on the server');
+      }
     } catch (error) {
       console.error('Error saving profile data:', error);
-      Alert.alert('Error', 'Failed to update profile data');
+      Alert.alert('Error', error.message || 'Failed to update profile data');
     }
   };
-  const handlelogout =() =>{
+
+  const handleLogout = () => {
     removeAuthToken();
-    navigation.navigate('SplashScreen')
-  }
+    navigation.navigate('SplashScreen');
+  };
 
   return (
     <ScrollView style={styles.scrollContainer}>
@@ -64,9 +134,16 @@ const Profile = ({ navigation }) => {
           <Text style={styles.heading}>👤 Profile Info</Text>
         </View>
 
-        <View style={styles.profileIcon}>
-          <MaterialIcons name="account-circle" size={100} color="orange" />
-        </View>
+        <TouchableOpacity style={styles.profileImageContainer} onPress={isEditing ? pickImage : null}>
+          {profileImage ? (
+            <Image source={{ uri: profileImage }} style={styles.profileImage} />
+          ) : (
+            <MaterialIcons name="account-circle" size={100} color="orange" />
+          )}
+          {isEditing && (
+            <MaterialIcons name="photo-camera" size={24} color="black" style={styles.cameraIcon} />
+          )}
+        </TouchableOpacity>
 
         <View style={styles.formContainer}>
           <Text style={styles.label}>Name:</Text>
@@ -110,21 +187,34 @@ const Profile = ({ navigation }) => {
           <Text style={styles.label}>Age:</Text>
           <TextInput
             style={[styles.input, !isEditing && styles.disabledInput]}
-            value={profileData.age}
-            onChangeText={(text) => setProfileData({ ...profileData, age: text })}
+            value={String(profileData.age)}
+            onChangeText={(text) => {
+              if (text === '' || /^\d+$/.test(text)) {
+                setProfileData({ ...profileData, age: text });
+              }
+            }}
             editable={isEditing}
             placeholder="Your Age"
             keyboardType="numeric"
+            maxLength={3}
           />
 
           <Text style={styles.label}>Sex:</Text>
-          <TextInput
-            style={[styles.input, !isEditing && styles.disabledInput]}
-            value={profileData.sex}
-            onChangeText={(text) => setProfileData({ ...profileData, sex: text })}
-            editable={isEditing}
-            placeholder="Male / Female / Other"
-          />
+          <View style={[styles.pickerContainer, !isEditing && styles.disabledInput]}>
+            <Picker
+              selectedValue={profileData.sex}
+              onValueChange={(itemValue) =>
+                setProfileData({ ...profileData, sex: itemValue })
+              }
+              enabled={isEditing}
+              style={{ color: 'black' }}
+            >
+              <Picker.Item label="Select your gender" value="" />
+              <Picker.Item label="Male" value="male" />
+              <Picker.Item label="Female" value="female" />
+              <Picker.Item label="Other" value="other" />
+            </Picker>
+          </View>
 
           <Text style={styles.label}>Location:</Text>
           <View style={[styles.pickerContainer, !isEditing && styles.disabledInput]}>
@@ -134,9 +224,10 @@ const Profile = ({ navigation }) => {
                 setProfileData({ ...profileData, Location: itemValue })
               }
               enabled={isEditing}
+              style={{ color: 'black' }}
             >
               <Picker.Item label="Select your location" value="" />
-              <Picker.Item label="kakkanad" value="kakkanad"  />
+              <Picker.Item label="Kakkanad" value="Kakkanad" />
               <Picker.Item label="Aluva" value="Aluva" />
               <Picker.Item label="Edappally" value="Edappally" />
               <Picker.Item label="Kalamassery" value="Kalamassery" />
@@ -155,15 +246,21 @@ const Profile = ({ navigation }) => {
           </TouchableOpacity>
 
           {isEditing && (
-            <TouchableOpacity style={styles.saveButton} onPress={saveProfileData}>
-              <Text style={styles.buttonText}>Save Changes</Text>
+            <TouchableOpacity
+              style={styles.saveButton}
+              onPress={saveProfileData}
+              disabled={loading}
+            >
+              <Text style={styles.buttonText}>{loading ? 'Saving...' : 'Save Changes'}</Text>
             </TouchableOpacity>
           )}
         </View>
-        {!isEditing &&(<TouchableOpacity style={{backgroundColor:"orange",padding:17,borderRadius:10}}onPress={()=>handlelogout()}>
-          <Text style={{textAlign:"center",color:"white",fontSize:20,fontWeight:"bold"}}>Logout</Text>
-        </TouchableOpacity>)}
-        
+
+        {!isEditing && (
+          <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+            <Text style={styles.buttonText}>Logout</Text>
+          </TouchableOpacity>
+        )}
       </View>
     </ScrollView>
   );
@@ -189,9 +286,23 @@ const styles = StyleSheet.create({
     color: 'orange',
     textAlign: 'center',
   },
-  profileIcon: {
+  profileImageContainer: {
     alignItems: 'center',
     marginBottom: 20,
+    position: 'relative',
+  },
+  profileImage: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+  },
+  cameraIcon: {
+    position: 'absolute',
+    right: 10,
+    bottom: 10,
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 2,
   },
   formContainer: {
     marginBottom: 20,
@@ -216,7 +327,7 @@ const styles = StyleSheet.create({
   },
   disabledInput: {
     backgroundColor: '#f0f0f0',
-    color: '#666',
+    color: 'black',
   },
   pickerContainer: {
     borderWidth: 1,
@@ -244,10 +355,17 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     alignItems: 'center',
   },
+  logoutButton: {
+    backgroundColor: 'orange',
+    padding: 17,
+    borderRadius: 10,
+    marginTop: 10,
+  },
   buttonText: {
     fontSize: 18,
     color: 'white',
     fontWeight: 'bold',
+    textAlign: 'center',
   },
 });
 

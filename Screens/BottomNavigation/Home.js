@@ -3,6 +3,7 @@ import Drawer from '../Drawer/CustomDrawerContent';
 import { DrawerActions } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+
 import {
   View,
   StyleSheet,
@@ -124,7 +125,7 @@ const Home = ({ route, navigation }) => {
         <View style={{alignItems: 'center'}}>
           <View style={{flexDirection: 'row', alignItems: 'center'}}>
             <Image
-              source={require('../../assets/images/img/cat5.jpg')}
+              source={require('../../assets/images/petlogo.png')}
               style={[
                 styles.bannerImage,
                 {width: 60, height: 60, borderRadius: 30, marginRight: 10},

@@ -9,14 +9,14 @@ import {
   SafeAreaView,
   Alert,
   Platform,
-  ActivityIndicator
+  ActivityIndicator,
+  Image
 } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Checkbox } from 'react-native-paper';
 import { useMutation } from './utils/ApiService';
 
 const PetGroomingAppointmentScreen = ({ navigation }) => {
-  // State variables
   const [appointmentDate, setAppointmentDate] = useState(new Date());
   const [appointmentTime, setAppointmentTime] = useState(new Date());
   const [notes, setNotes] = useState('');
@@ -26,17 +26,15 @@ const PetGroomingAppointmentScreen = ({ navigation }) => {
   const [error, setError] = useState(null);
   const { fetchData, loading } = useMutation();
 
-  // Service options
   const serviceTypes = [
-    { id: 'grooming', label: 'Grooming' },
-    { id: 'boarding', label: 'Boarding' },
-    { id: 'daycare', label: 'Daycare' },
-    { id: 'veterinary', label: 'Veterinary Check-up' },
+    { id: 'grooming', label: 'Grooming', icon: '🐾' },
+    { id: 'boarding', label: 'Boarding', icon: '🏠' },
+    { id: 'daycare', label: 'Daycare', icon: '🎾' },
+    { id: 'veterinary', label: 'Veterinary', icon: '🩺' },
   ];
 
   const [selectedService, setSelectedService] = useState('grooming');
 
-  // Subservices options depending on main service
   const subServiceOptions = {
     grooming: [
       { id: 'dog_grooming', label: 'Dog Grooming' },
@@ -64,21 +62,18 @@ const PetGroomingAppointmentScreen = ({ navigation }) => {
 
   const [selectedSubServices, setSelectedSubServices] = useState(['dog_grooming', 'nail_trimming']);
 
-  // Date picker handler
   const onDateChange = (event, selectedDate) => {
     const currentDate = selectedDate || appointmentDate;
     setShowDatePicker(Platform.OS === 'ios');
     setAppointmentDate(currentDate);
   };
 
-  // Time picker handler
   const onTimeChange = (event, selectedTime) => {
     const currentTime = selectedTime || appointmentTime;
     setShowTimePicker(Platform.OS === 'ios');
     setAppointmentTime(currentTime);
   };
 
-  // Format date to display
   const formatDate = (date) => {
     return date.toLocaleDateString('en-US', {
       year: 'numeric',
@@ -87,7 +82,6 @@ const PetGroomingAppointmentScreen = ({ navigation }) => {
     });
   };
 
-  // Format time to display
   const formatTime = (time) => {
     return time.toLocaleTimeString('en-US', {
       hour: '2-digit',
@@ -95,14 +89,12 @@ const PetGroomingAppointmentScreen = ({ navigation }) => {
     });
   };
 
-  // Format time for API (24-hour format HH:MM)
   const formatTimeForAPI = (time) => {
     const hours = time.getHours().toString().padStart(2, '0');
     const minutes = time.getMinutes().toString().padStart(2, '0');
     return `${hours}:${minutes}`;
   };
 
-  // Toggle sub-service selection
   const toggleSubService = (id) => {
     setSelectedSubServices(prevSelected => {
       if (prevSelected.includes(id)) {
@@ -113,21 +105,17 @@ const PetGroomingAppointmentScreen = ({ navigation }) => {
     });
   };
 
-  // Handle service change
   const handleServiceChange = (serviceId) => {
     setSelectedService(serviceId);
-    // Reset sub-services when changing main service
     setSelectedSubServices([]);
   };
 
-  // Submit appointment to API
   const handleSubmit = async () => {
     if (selectedSubServices.length === 0) {
       Alert.alert("Error", "Please select at least one sub-service");
       return;
     }
 
-    // Create appointment object
     const appointmentData = {
       shopId: 1,
       appointmentDate: appointmentDate.toISOString().split('T')[0],
@@ -141,42 +129,31 @@ const PetGroomingAppointmentScreen = ({ navigation }) => {
     setError(null);
 
     try {
-      // Make API call to the /appointments endpoint
       const result = await fetchData({
         endpoint: 'appointments',
         method: 'POST',
         data: appointmentData
       });
-      
-      // Check if result exists and has required properties
+
       if (!result) {
         throw new Error('No response received from the server');
       }
-      
+
       console.log('Appointment created:', result);
-      
-      // Show success message
+
       Alert.alert(
         "Appointment Scheduled",
-        `Your pet's appointment has been successfully scheduled for ${formatDate(appointmentDate)} at ${formatTime(appointmentTime)}`,
+        `Your pet's appointment has been scheduled for ${formatDate(appointmentDate)} at ${formatTime(appointmentTime)}`,
         [{
-          text: "OK", 
-          onPress: () => {
-            // Navigate to Cart and pass userId in the navigation params
-            navigation.navigate('Viewappoinments', { userId: result.userId });
-          }
+          text: "OK",
+          onPress: () => navigation.navigate('Viewappoinments', { userId: result.userId })
         }]
       );
-      
+
     } catch (err) {
       console.error('Error scheduling appointment:', err);
       setError(err.message || 'Something went wrong. Please try again.');
-      
-      Alert.alert(
-        "Scheduling Failed",
-        err.message || "There was a problem scheduling your appointment. Please try again.",
-        [{ text: "OK" }]
-      );
+      Alert.alert("Scheduling Failed", err.message || "There was a problem scheduling your appointment.");
     } finally {
       setIsLoading(false);
     }
@@ -185,90 +162,100 @@ const PetGroomingAppointmentScreen = ({ navigation }) => {
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScrollView style={styles.container}>
-        <Text style={styles.header}>Schedule Pet Appointment</Text>
-        
-        {/* Service Selection */}
-        <Text style={styles.sectionTitle}>Select Service</Text>
-        <View style={styles.serviceContainer}>
-          {serviceTypes.map((service) => (
-            <TouchableOpacity
-              key={service.id}
-              style={[styles.serviceButton, selectedService === service.id && styles.selectedServiceButton]}
-              onPress={() => handleServiceChange(service.id)}
-            >
-              <Text style={[styles.serviceButtonText, selectedService === service.id && styles.selectedServiceText]}>
-                {service.label}
-              </Text>
-            </TouchableOpacity>
-          ))}
+        <View style={styles.headerContainer}>
+          <Text style={styles.header}>Pet Appointment</Text>
+          <Text style={styles.subHeader}>Book your pet's next visit</Text>
         </View>
 
-        {/* Sub-Services Selection */}
-        <Text style={styles.sectionTitle}>Select Sub-Services</Text>
-        <View style={styles.subServiceContainer}>
-          {subServiceOptions[selectedService].map((subService) => (
-            <View key={subService.id} style={styles.checkboxContainer}>
-              <Checkbox
-                status={selectedSubServices.includes(subService.id) ? 'checked' : 'unchecked'}
-                onPress={() => toggleSubService(subService.id)}
-                color="#4CAF50"
-              />
-              <Text style={styles.checkboxLabel}>{subService.label}</Text>
-            </View>
-          ))}
+        <View style={styles.card}>
+          <Text style={styles.sectionTitle}>Select Service</Text>
+          <View style={styles.serviceContainer}>
+            {serviceTypes.map((service) => (
+              <TouchableOpacity
+                key={service.id}
+                style={[
+                  styles.serviceButton,
+                  selectedService === service.id && styles.selectedServiceButton
+                ]}
+                onPress={() => handleServiceChange(service.id)}
+              >
+                <Text style={styles.serviceIcon}>{service.icon}</Text>
+                <Text style={[
+                  styles.serviceButtonText,
+                  selectedService === service.id && styles.selectedServiceText
+                ]}>
+                  {service.label}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
         </View>
 
-        {/* Date Picker */}
-        <Text style={styles.sectionTitle}>Select Date</Text>
-        <TouchableOpacity style={styles.dateTimeButton} onPress={() => setShowDatePicker(true)}>
-          <Text style={styles.dateTimeText}>{formatDate(appointmentDate)}</Text>
-        </TouchableOpacity>
-        
-        {showDatePicker && (
-          <DateTimePicker
-            value={appointmentDate}
-            mode="date"
-            display="default"
-            onChange={onDateChange}
-            minimumDate={new Date()}
+        <View style={styles.card}>
+          <Text style={styles.sectionTitle}>Select Sub-Services</Text>
+          <View style={styles.subServiceContainer}>
+            {subServiceOptions[selectedService].map((subService) => (
+              <View key={subService.id} style={styles.checkboxContainer}>
+                <Checkbox
+                  status={selectedSubServices.includes(subService.id) ? 'checked' : 'unchecked'}
+                  onPress={() => toggleSubService(subService.id)}
+                  color="#FF8C00"
+                />
+                <Text style={styles.checkboxLabel}>{subService.label}</Text>
+              </View>
+            ))}
+          </View>
+        </View>
+
+        <View style={styles.card}>
+          <Text style={styles.sectionTitle}>Select Date & Time</Text>
+          <TouchableOpacity style={styles.dateTimeButton} onPress={() => setShowDatePicker(true)}>
+            <Text style={styles.dateTimeLabel}>Date:</Text>
+            <Text style={styles.dateTimeText}>{formatDate(appointmentDate)}</Text>
+          </TouchableOpacity>
+          {showDatePicker && (
+            <DateTimePicker
+              value={appointmentDate}
+              mode="date"
+              display="default"
+              onChange={onDateChange}
+              minimumDate={new Date()}
+            />
+          )}
+
+          <TouchableOpacity style={styles.dateTimeButton} onPress={() => setShowTimePicker(true)}>
+            <Text style={styles.dateTimeLabel}>Time:</Text>
+            <Text style={styles.dateTimeText}>{formatTime(appointmentTime)}</Text>
+          </TouchableOpacity>
+          {showTimePicker && (
+            <DateTimePicker
+              value={appointmentTime}
+              mode="time"
+              display="default"
+              onChange={onTimeChange}
+              minuteInterval={15}
+            />
+          )}
+        </View>
+
+        <View style={styles.card}>
+          <Text style={styles.sectionTitle}>Additional Notes</Text>
+          <TextInput
+            style={styles.notesInput}
+            multiline
+            numberOfLines={4}
+            placeholder="Please add any special instructions or concerns..."
+            value={notes}
+            onChangeText={setNotes}
           />
-        )}
+        </View>
 
-        {/* Time Picker */}
-        <Text style={styles.sectionTitle}>Select Time</Text>
-        <TouchableOpacity style={styles.dateTimeButton} onPress={() => setShowTimePicker(true)}>
-          <Text style={styles.dateTimeText}>{formatTime(appointmentTime)}</Text>
-        </TouchableOpacity>
-        
-        {showTimePicker && (
-          <DateTimePicker
-            value={appointmentTime}
-            mode="time"
-            display="default"
-            onChange={onTimeChange}
-            minuteInterval={15}
-          />
-        )}
-
-        {/* Notes Input */}
-        <Text style={styles.sectionTitle}>Additional Notes</Text>
-        <TextInput
-          style={styles.notesInput}
-          multiline
-          numberOfLines={4}
-          placeholder="Please add any special instructions or concerns..."
-          value={notes}
-          onChangeText={setNotes}
-        />
-
-        {/* Error Message */}
         {error && (
           <View style={styles.errorContainer}>
             <Text style={styles.errorText}>{error}</Text>
           </View>
         )}
 
-        {/* Submit Button */}
         <TouchableOpacity
           style={styles.submitButton}
           onPress={handleSubmit}
@@ -288,92 +275,149 @@ const PetGroomingAppointmentScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#f8f8f8',
   },
   container: {
-    padding: 20,
+    padding: 16,
+  },
+  headerContainer: {
+    marginBottom: 20,
+    alignItems: 'center',
+    paddingVertical: 10,
   },
   header: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: 'bold',
-    marginBottom: 20,
+    color: '#FF8C00',
+    marginBottom: 5,
+  },
+  subHeader: {
+    fontSize: 16,
+    color: '#666',
+    marginBottom: 10,
+  },
+  card: {
+    backgroundColor: '#ffffff',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   sectionTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    marginTop: 10,
+    marginBottom: 12,
+    color: '#333',
   },
   serviceContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    marginVertical: 10,
+    justifyContent: 'space-between',
   },
   serviceButton: {
-    padding: 10,
-    margin: 5,
+    width: '48%',
+    padding: 15,
+    marginBottom: 10,
     borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 5,
+    borderColor: '#eee',
+    borderRadius: 10,
+    alignItems: 'center',
+    backgroundColor: '#fff',
   },
   selectedServiceButton: {
-    backgroundColor: '#4CAF50',
+    backgroundColor: '#FF8C00',
+    borderColor: '#FF8C00',
+  },
+  serviceIcon: {
+    fontSize: 24,
+    marginBottom: 5,
   },
   serviceButtonText: {
     fontSize: 16,
+    fontWeight: '500',
+    color: '#444',
   },
   selectedServiceText: {
     color: '#fff',
+    fontWeight: 'bold',
   },
   subServiceContainer: {
-    marginVertical: 10,
+    marginVertical: 5,
   },
   checkboxContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginVertical: 5,
+    marginBottom: 8,
+    paddingVertical: 3,
   },
   checkboxLabel: {
     fontSize: 16,
+    marginLeft: 8,
+    color: '#333',
   },
   dateTimeButton: {
-    padding: 10,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 14,
     borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 5,
-    marginTop: 10,
+    borderColor: '#e0e0e0',
+    borderRadius: 8,
+    marginBottom: 12,
+    backgroundColor: '#f9f9f9',
+  },
+  dateTimeLabel: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: '#666',
   },
   dateTimeText: {
     fontSize: 16,
+    color: '#333',
+    fontWeight: '500',
   },
   notesInput: {
-    marginTop: 10,
     borderWidth: 1,
-    borderColor: '#ccc',
-    padding: 10,
-    borderRadius: 5,
+    borderColor: '#e0e0e0',
+    borderRadius: 8,
+    padding: 12,
+    textAlignVertical: 'top',
     fontSize: 16,
-    height: 100,
+    minHeight: 100,
+    color: '#333',
+  },
+  errorContainer: {
+    backgroundColor: '#FFF0F0',
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 16,
+    borderLeftWidth: 4,
+    borderLeftColor: '#FF5252',
+  },
+  errorText: {
+    color: '#D32F2F',
+    fontSize: 14,
   },
   submitButton: {
-    backgroundColor: '#4CAF50',
-    padding: 15,
-    borderRadius: 5,
-    marginTop: 20,
+    backgroundColor: '#FF8C00',
+    padding: 16,
+    borderRadius: 10,
     alignItems: 'center',
+    marginBottom: 30,
+    shadowColor: '#FF8C00',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    elevation: 5,
   },
   submitButtonText: {
     color: '#fff',
-    fontSize: 16,
-  },
-  errorContainer: {
-    backgroundColor: '#f8d7da',
-    padding: 10,
-    borderRadius: 5,
-    marginTop: 10,
-  },
-  errorText: {
-    color: '#721c24',
-    fontSize: 16,
+    fontSize: 18,
+    fontWeight: 'bold',
   },
 });
 
